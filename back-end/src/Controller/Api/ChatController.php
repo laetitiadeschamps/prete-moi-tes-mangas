@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
@@ -10,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @Route("/api/v1/user/{id}", name="api_chat_", requirements={"id"="\d+", "chatId"="\d+"})
@@ -21,15 +23,16 @@ class ChatController extends AbstractController
     protected $chatRepository;
     protected $messageRepository;
     protected $em;
+    protected $serializer;
     
 
-    public function __construct(UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository){
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository){
 
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
         $this->messageRepository = $messageRepository;
         $this->em = $em;
-        
+        $this->serializer = $serializer;
 
     }
     
@@ -37,14 +40,17 @@ class ChatController extends AbstractController
     
     /**
      * method to fetch all chats of a user
-     * @Route("/chat", name="list")
+     * @Route("/chat", name="list", methods="GET")
      * 
      */
     public function list($id): Response
     {
-        //I need 
-        return $this->json("", 200, [""], [
-            'groups' => 'mangas'
+        $user = $this->userRepository->find($id);
+        
+        $chats = $user->getChats();
+        
+        return $this->json($chats, 200, [], [
+            'groups' => 'chats'
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Repository\MessageRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=MessageRepository::class)
  */
@@ -15,22 +16,26 @@ class Message
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"chats"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"chats"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"chats"})
      */
     private $object;
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
+     * @Groups({"chats"})
      */
     private $status;
 
@@ -47,12 +52,14 @@ class Message
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"chats"})
      */
     private $author;
 
     /**
      * @ORM\ManyToOne(targetEntity=Chat::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * 
      */
     private $chat;
 
