@@ -17,18 +17,29 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
-* @Route("/api/v1", name="api_manga-", requirements={"id"="\d+"})
+* @Route("/api/v1", name="api_manga-", requirements={"id"="\d+", "mangaId"="\d+"})
 */
 class MangaController extends AbstractController
 {
+    private $mangaRepository;
+    private $volumeRepository;
+    private $em;
+    private $userRepository;
+
+    public function __construct(MangaRepository $mangaRepository, VolumeRepository $volumeRepository, UserRepository $userRepository, EntityManagerInterface $em)
+    {
+        $this->mangaRepository = $mangaRepository;
+        $this->volumeRepository = $volumeRepository;
+        $this->userRepository = $userRepository;
+        $this->em=$em;
+    }
     /**
      * Method allowing to fetch all mangas
      * @Route("/manga", name="list", methods={"GET"})
      */
-    public function list(MangaRepository $mangaRepository): Response
+    public function list(): Response
     {
-       
-        return $this->json($mangaRepository->findAll(), 200, [], [
+        return $this->json($this->mangaRepository->findAll(), 200, [], [
             'groups' => 'mangas'
         ]);
     }
@@ -36,19 +47,18 @@ class MangaController extends AbstractController
      * Method allowing to add a manga into a user's collection
      * @Route("/user/{id}/manga", name="add", methods={"POST"})
      */
-    public function add(int $id, MangaRepository $mangaRepository, UserRepository $userRepository, VolumeRepository $volumeRepository, Request $request, EntityManagerInterface $em): Response
+    public function add(int $id, Request $request): Response
     {
      
         //We find the manga that was selected and its attached volumes   
-        $manga = $mangaRepository->findOneBy(['title'=>$request->get('title')]);
+        $manga = $this->mangaRepository->findOneBy(['title'=>$request->get('title')]);
        
-        $volumes = $volumeRepository->findSelectedVolumes($manga->getId(),$request->get('volumes'));
+        $volumes = $this->volumeRepository->findSelectedVolumes($manga->getId(),$request->get('volumes'));
 
         foreach($volumes as $volume) {
-            $volume->addUsers($userRepository->find($id));
+            $volume->addUsers($this->userRepository->find($id));
         }
-        $em->flush();
-
+        $this->em->flush();
 
         return $this->json("Le manga". $manga->getTitle() . "a été ajouté à votre collection", 201);
         
@@ -56,15 +66,25 @@ class MangaController extends AbstractController
     /**
      * @Route("/user/{id}/manga/{mangaId}", name="update", methods={"PUT|PATCH"})
      */
-    public function update(int $mangaId, MangaRepository $mangaRepository, EntityManagerInterface $em, Request $request, SerializerInterface $serializer): Response
+    public function update(int $mangaId): Response
     {
-        return $this->json("Le manga XX a été ajouté à votre collection", 201);   
+        
+        return $this->json("Votre collection a bien été mise à jour", 200);   
     }
     /**
      * @Route("/user/{id}/manga/{mangaId}", name="delete", methods={"DELETE"})
      */
-    public function delete(int $mangaId, MangaRepository $mangaRepository, EntityManagerInterface $em): Response
+    public function delete(int $id, int $mangaId): Response
     {
-        return $this->json("Le manga XX a été ajouté à votre collection", 201);
+         //We find the manga that was selected and its attached volumes   
+         $manga = $this->mangaRepository->find($mangaId);
+       
+         $volumes = $manga->getVolumes();
+
+         //We remove the current user from all volumes attached to the manga
+         foreach($volumes as $volume) {
+             $volume->removeUser($this->userRepository->find($id));
+         }
+        return $this->json("Le manga" . $manga->getTitle() ." a été supprimé de votre collection", 204);
     }
 }
