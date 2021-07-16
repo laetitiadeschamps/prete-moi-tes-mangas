@@ -18,11 +18,17 @@ class ChatRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Chat::class);
     }
-
+    public function getAllChatByUserId($id) {
+        
+        $qb = $this->createQueryBuilder('chat')
+            ->where("chat.a");
+    }
     // /**
     //  * @return Chat[] Returns an array of Chat objects
     //  */
     /*
+
+    
     public function findByExampleField($value)
     {
         return $this->createQueryBuilder('c')
