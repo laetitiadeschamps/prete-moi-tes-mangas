@@ -14,10 +14,9 @@ class JikanApi
         $this->client = $client;
     }
     /**
-     * Méthode permettant de retourner les informations (issues d'une API)
-     * d'un manga en fonction de son title
+     * Method allowing to fetch informations from jikan API about a manga using its title
      *
-     * @param string $title
+     * @param string manga title
      * @return Array
      */
     public function fetch($title)

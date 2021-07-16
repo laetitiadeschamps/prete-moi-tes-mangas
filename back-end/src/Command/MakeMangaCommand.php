@@ -332,10 +332,6 @@ class MakeMangaCommand extends Command
         //     'author'=>'FUJIMOTO Tatsuki'
         // ],
         //  [
-        //     'title'=>"Golgo 13",
-        //     'author'=>'SAITÔ Takao'
-        // ],
-        //  [
         //     'title'=>"Vinland Saga",
         //     'author'=>'YUKIMURA Makoto'
         // ],
@@ -420,29 +416,24 @@ class MakeMangaCommand extends Command
         //      "author" => "TSUKUSHI Akihito"
         //  ],
 
-    ];
+        ];
     public function __construct(JikanApi $jikanApi, EntityManagerInterface $em)
     {
         parent::__construct();
         $this->jikanApi = $jikanApi;
         $this->em = $em;
     }
-    protected function configure(): void
-    {
-        // $this
-        //     ->addArgument('arg1',
-        // InputArgument::OPTIONAL, 'Argument description')
-        //     ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-        // ;
-    }
-
+    
+    /**
+     * method to fill DB using an array of manga titles using JikanApi service
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
         foreach($this->mangaNames as $mangaName) {
             $result = $this->jikanApi->fetch($mangaName['title']);
-            dump($result["results"][0]["title"]);
+            
             $manga = new Manga();
             $manga->setTitle($mangaName['title']);
             $manga->setPicture($result["results"][0]["image_url"]);
@@ -453,20 +444,7 @@ class MakeMangaCommand extends Command
         }
         $this->em->flush();
 
-        
-     
-        //$arg1 = $input->getArgument('arg1');
-       
-        // if ($arg1) {
-        //     $io->note(sprintf('You passed an argument: %s', $arg1));
-        // }
-
-        // if ($input->getOption('option1')) {
-        //     // ...
-        // }
-
-
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        $io->success('Les mangas ont été insérés dans la base de données.');
 
         return Command::SUCCESS;
     }
