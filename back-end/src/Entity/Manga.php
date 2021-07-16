@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=MangaRepository::class)
@@ -19,36 +19,40 @@ class Manga
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"mangas"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
+     * @Groups({"mangas"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * 
+     * @Groups({"mangas"})
      */
     private $author;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"mangas"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"mangas"})
      */
     private $synopsis;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné")
-     * 
+     * @Groups({"mangas"})
      */
     private $volume_number;
 
@@ -64,11 +68,13 @@ class Manga
 
     /**
      * @ORM\ManyToMany(targetEntity=Category::class, mappedBy="mangas")
+     * @Groups({"mangas"})
      */
     private $categories;
 
     /**
      * @ORM\OneToMany(targetEntity=Volume::class, mappedBy="manga", orphanRemoval=true)
+     * @Groups({"mangas"})
      */
     private $volumes;
 

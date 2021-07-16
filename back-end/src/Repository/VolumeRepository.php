@@ -19,6 +19,15 @@ class VolumeRepository extends ServiceEntityRepository
         parent::__construct($registry, Volume::class);
     }
 
+    public function findSelectedVolumes($mangaId, $volumes) {
+       
+        $qb = $this->createQueryBuilder('volume')->where('volume.number IN ('. $volumes .')')->andWhere('volume.manga = :manga')->setParameter(':manga', $mangaId);
+        $query = $qb->getQuery();
+       
+        return $query->getResult();
+      }
+    
+
     // /**
     //  * @return Volume[] Returns an array of Volume objects
     //  */
