@@ -24,20 +24,18 @@ class ChatController extends AbstractController
     protected $messageRepository;
     protected $em;
     protected $serializer;
-    
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository){
+
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository)
+    {
 
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
         $this->messageRepository = $messageRepository;
         $this->em = $em;
         $this->serializer = $serializer;
-
     }
-    
-        
-    
+
     /**
      * method to fetch all chats of a user
      * @Route("/chat", name="list", methods="GET")
@@ -46,10 +44,24 @@ class ChatController extends AbstractController
     public function list($id): Response
     {
         $user = $this->userRepository->find($id);
-        
+
         $chats = $user->getChats();
-        
+
         return $this->json($chats, 200, [], [
+            'groups' => 'chats'
+        ]);
+    }
+
+    /**
+     * method to get one chat of a user
+     * @Route("/chat/{chatId}", name="details", methods="GET")
+     */
+    public function details($id, $chatId)
+    {
+        $user = $this->userRepository->find($id);
+        $chat = $this->chatRepository->findOneByUser($id, $chatId);
+        
+        return $this->json($chat, 200, [], [
             'groups' => 'chats'
         ]);
     }

@@ -41,18 +41,20 @@ class Message
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"chats"})
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime")
+     * 
      */
     private $updated_at;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"chats"})
+     * 
      */
     private $author;
 
