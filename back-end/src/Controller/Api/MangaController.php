@@ -101,9 +101,26 @@ class MangaController extends AbstractController
     /**
      * @Route("/user/{id}/manga/{mangaId}/availability", name="availability", methods={"PUT|PATCH"})
      */
-    public function availability(int $mangaId, Request $request): Response
+    public function availability(int $id, int $mangaId, Request $request): Response
     {
         $manga = $this->mangaRepository->find($mangaId);
+        $user = $this->userRepository->find($id);
+        
+        $volumes = $manga->getVolumes();
+        $volumesOwned = $this->volumeRepository->findSelectedVolumes($mangaId,$request->get('volumes'));
+     
+        //We remove all volumes of the collection from the current user's collection
+        foreach ($volumes as $volume) {
+            $volume_user = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
+            if($volume_user && in_array($volume, $volumesOwned)) {
+               $volume_user->setStatus(true);
+            } elseif($volume_user && !in_array($volume, $volumesOwned)) {
+                $volume_user->setStatus(false);
+            }
+            
+        }
+          
+        $this->em->flush();
         return $this->json("Vos disponibilités pour le manga ". $manga->getTitle() ." ont bien été mises à jour", 200);   
     }
     /**
