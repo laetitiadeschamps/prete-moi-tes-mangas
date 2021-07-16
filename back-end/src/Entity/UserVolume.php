@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserVolumeRepository;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -43,6 +44,13 @@ class UserVolume
      * @ORM\JoinColumn(nullable=false)
      */
     private $volume;
+
+    public function __construct()
+    {
+        $this->status=true;
+        $this->created_at = new DateTime();
+        $this->updated_at = new DateTime();
+    }
 
     public function getId(): ?int
     {
