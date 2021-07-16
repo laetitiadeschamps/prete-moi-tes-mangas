@@ -149,10 +149,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $updated_at;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Volume::class, inversedBy="users")
-     */
-    private $volumes;
 
     /**
      * @ORM\ManyToMany(targetEntity=Chat::class, inversedBy="users")
@@ -164,6 +160,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $messages;
 
+    /**
+     * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $volumes;
+
 
     public function __construct()
     {
@@ -171,9 +172,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->holiday_mode = false;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
-        $this->volumes = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->messages = new ArrayCollection();
+        $this->volumes = new ArrayCollection();
     }
     
     public function getId(): ?int
@@ -433,29 +434,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Volume[]
-     */
-    public function getVolumes(): Collection
-    {
-        return $this->volumes;
-    }
-
-    public function addVolume(Volume $volume): self
-    {
-        if (!$this->volumes->contains($volume)) {
-            $this->volumes[] = $volume;
-        }
-
-        return $this;
-    }
-
-    public function removeVolume(Volume $volume): self
-    {
-        $this->volumes->removeElement($volume);
-
-        return $this;
-    }
 
     /**
      * @return Collection|Chat[]
@@ -505,6 +483,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($message->getAuthor() === $this) {
                 $message->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserVolume[]
+     */
+    public function getVolumes(): Collection
+    {
+        return $this->volumes;
+    }
+
+    public function addVolume(UserVolume $volume): self
+    {
+        if (!$this->volumes->contains($volume)) {
+            $this->volumes[] = $volume;
+            $volume->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVolume(UserVolume $volume): self
+    {
+        if ($this->volumes->removeElement($volume)) {
+            // set the owning side to null (unless already changed)
+            if ($volume->getUser() === $this) {
+                $volume->setUser(null);
             }
         }
 

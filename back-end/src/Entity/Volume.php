@@ -39,10 +39,6 @@ class Volume
      */
     private $updated_at;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, mappedBy="volumes")
-     */
-    private $users;
 
     /**
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="volumes")
@@ -50,12 +46,18 @@ class Volume
      */
     private $manga;
 
+    /**
+     * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="volume", orphanRemoval=true)
+     */
+    private $users;
+
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -99,32 +101,6 @@ class Volume
         return $this;
     }
 
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-            $user->addVolume($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        if ($this->users->removeElement($user)) {
-            $user->removeVolume($this);
-        }
-
-        return $this;
-    }
 
     public function getManga(): ?Manga
     {
@@ -134,6 +110,36 @@ class Volume
     public function setManga(?Manga $manga): self
     {
         $this->manga = $manga;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserVolume[]
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(UserVolume $user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->setVolume($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(UserVolume $user): self
+    {
+        if ($this->users->removeElement($user)) {
+            // set the owning side to null (unless already changed)
+            if ($user->getVolume() === $this) {
+                $user->setVolume(null);
+            }
+        }
 
         return $this;
     }
