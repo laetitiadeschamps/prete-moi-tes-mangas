@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\VolumeRepository;
+use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+/**
+ * @ORM\Entity(repositoryClass=VolumeRepository::class)
+ */
+class Volume
+{
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="integer")
+     * @Assert\NotBlank(message="Ce champ doit être renseigné.")
+     * @Groups({"mangas"})
+     */
+    private $number;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $created_at;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updated_at;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=User::class, mappedBy="volumes")
+     */
+    private $users;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="volumes")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $manga;
+
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+        $this->created_at = new DateTime();
+        $this->updated_at = new DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    public function setNumber(int $number): self
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $created_at): self
+    {
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updated_at): self
+    {
+        $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->addVolume($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): self
+    {
+        if ($this->users->removeElement($user)) {
+            $user->removeVolume($this);
+        }
+
+        return $this;
+    }
+
+    public function getManga(): ?Manga
+    {
+        return $this->manga;
+    }
+
+    public function setManga(?Manga $manga): self
+    {
+        $this->manga = $manga;
+
+        return $this;
+    }
+}

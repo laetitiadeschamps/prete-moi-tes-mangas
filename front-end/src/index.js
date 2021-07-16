@@ -1,15 +1,12 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDom from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-// import './index.css';
-// import './components/App/App.scss';
+import App from 'src/components/App';
+import store from 'src/store';
 
-import App from './components/App/App';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import store from './store';
-
+import 'semantic-ui-css/semantic.min.css';
 
 const rootReactElement = (
   <Router>
@@ -21,5 +18,4 @@ const rootReactElement = (
 
 const target = document.getElementById('root');
 
-ReactDOM.render(rootReactElement, target);
-
+ReactDom.render(rootReactElement, target);
