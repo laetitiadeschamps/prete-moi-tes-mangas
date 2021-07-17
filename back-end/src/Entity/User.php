@@ -23,7 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $id;
 
@@ -62,7 +62,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
     */
     private $pseudo;
 
@@ -93,7 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $picture;
 
@@ -162,7 +162,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author")
-     * @Groups({"chats"})
+     * 
      */
     private $messages;
 

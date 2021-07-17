@@ -16,13 +16,13 @@ class Message
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="text")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $content;
 
@@ -35,13 +35,13 @@ class Message
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $created_at;
 
@@ -54,6 +54,7 @@ class Message
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"one-chat"})
      * 
      */
     private $author;

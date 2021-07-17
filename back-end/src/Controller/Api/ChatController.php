@@ -62,7 +62,7 @@ class ChatController extends AbstractController
         $chat = $this->chatRepository->findOneByUser($id, $chatId);
         
         return $this->json($chat, 200, [], [
-            'groups' => 'chats'
+            'groups' => 'one-chat'
         ]);
     }
 }

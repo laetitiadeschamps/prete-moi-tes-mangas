@@ -28,9 +28,11 @@ class ChatRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->where('c.id = :id')
             ->setParameter(':id', $chatId)
-            ->innerJoin('c.users', 'u', 'WITH', 'u.id = :userId')
-            ->addSelect('u')
-            ->setParameter(':userId', $userId)
+            //->innerJoin('c.users', 'u', 'WITH', 'u.id = :userId')
+            ->leftJoin('c.messages', 'm', 'WITH', 'm.chat=c.id')
+            //->addSelect('u')
+            ->addSelect('m')
+            //->setParameter(':userId', $userId)
             ->getQuery()
             ->getOneOrNullResult();
     }

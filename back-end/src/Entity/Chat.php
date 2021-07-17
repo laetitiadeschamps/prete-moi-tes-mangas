@@ -18,7 +18,7 @@ class Chat
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $id;
 
@@ -29,25 +29,25 @@ class Chat
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $updated_at;
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, mappedBy="chats")
-     * @Groups({"chats"})
+     * @Groups({"chats", "one-chat"})
      */
     private $users;
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="chat", orphanRemoval=true)
-     * @Groups({"chats"})
+     * @Groups({"one-chat"})
      */
     private $messages;
 
