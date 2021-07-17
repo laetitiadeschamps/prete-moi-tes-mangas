@@ -25,7 +25,7 @@ class Volume
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $number;
 
@@ -43,6 +43,7 @@ class Volume
     /**
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="volumes")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"users"})
      */
     private $manga;
 

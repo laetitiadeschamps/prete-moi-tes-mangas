@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Repository\UserVolumeRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=UserVolumeRepository::class)
  */
@@ -20,6 +20,7 @@ class UserVolume
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"users"})
      */
     private $status;
 
@@ -42,6 +43,7 @@ class UserVolume
     /**
      * @ORM\ManyToOne(targetEntity=Volume::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"users"})
      */
     private $volume;
 

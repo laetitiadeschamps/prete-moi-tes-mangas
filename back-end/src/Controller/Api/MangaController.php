@@ -53,22 +53,19 @@ class MangaController extends AbstractController
      */
     public function add(int $id, Request $request): Response
     {
-     
-        //We find the manga that was selected and its attached volumes   
-        $manga = $this->mangaRepository->findOneBy(['title'=>$request->get('title')]);
-      
-        $volumes = $this->volumeRepository->findSelectedVolumes($manga->getId(),$request->get('volumes'));
-      
-        foreach($volumes as $volume) {
-            $user_volume = new UserVolume();
-            $user_volume->setUser($this->userRepository->find($id));
-            $user_volume->setVolume($volume);
-            $this->em->persist($user_volume);
-        }
-        $this->em->flush();
-
-        return $this->json("Le manga ". $manga->getTitle() . " a été ajouté à votre collection", 201);
-        
+      $jsonArray = json_decode($request->getContent(), true);
+      //We find the manga that was selected and its attached volumes   
+      $manga = $this->mangaRepository->findOneBy(['title'=>$jsonArray['title']]);
+      $volumes = $this->volumeRepository->findSelectedVolumes($manga->getId(),$jsonArray['volumes']);
+      //Then, for each selected volume, we create a new volumeUser relation, between the current user and the current volume
+      foreach($volumes as $volume) {
+        $user_volume = new UserVolume();
+        $user_volume->setUser($this->userRepository->find($id));
+        $user_volume->setVolume($volume);
+        $this->em->persist($user_volume);
+      }
+      $this->em->flush();
+      return $this->json("Le manga ". $manga->getTitle() . " a été ajouté à votre collection", 201);       
     }
     /**
      * @Route("/user/{id}/manga/{mangaId}", name="update", methods={"PUT|PATCH"})
@@ -77,23 +74,21 @@ class MangaController extends AbstractController
     {
         $manga = $this->mangaRepository->find($mangaId);
         $user = $this->userRepository->find($id);
-        
+        // We retrieve all volumes of the selected manga
         $volumes = $manga->getVolumes();
-      
         //We remove all volumes of the collection from the current user's collection
         foreach ($volumes as $volume) {
-            $volume_user = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
-            $volume_user ? $this->em->remove($volume_user):'';
+          $user_volume = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
+          $user_volume ? $this->em->remove($user_volume):'';
         }
-        
         // Then we add only the volumes sent by the fetch request to the user's collection
-        $volumesOwned = $this->volumeRepository->findSelectedVolumes($mangaId,$request->get('volumes')); 
-        
+        $jsonArray = json_decode($request->getContent(), true);
+        $volumesOwned = $this->volumeRepository->findSelectedVolumes($mangaId,$jsonArray['volumes']); 
         foreach($volumesOwned as $volumeOwned) {
-            $user_volume = new UserVolume();
-            $user_volume->setUser($user);
-            $user_volume->setVolume($volumeOwned);
-            $this->em->persist($user_volume);
+          $user_volume = new UserVolume();
+          $user_volume->setUser($user);
+          $user_volume->setVolume($volumeOwned);
+          $this->em->persist($user_volume);
         }
         $this->em->flush();
         return $this->json("Le manga ". $manga->getTitle() ." a bien été mis à jour", 200); 
@@ -105,21 +100,20 @@ class MangaController extends AbstractController
     {
         $manga = $this->mangaRepository->find($mangaId);
         $user = $this->userRepository->find($id);
-        
+        //We find the manga that was selected and its attached volumes
         $volumes = $manga->getVolumes();
-        $volumesOwned = $this->volumeRepository->findSelectedVolumes($mangaId,$request->get('volumes'));
-     
-        //We remove all volumes of the collection from the current user's collection
+        // We retrieve volume numbers given as available as per request
+        $jsonArray = json_decode($request->getContent(), true);
+        $volumesAvailable = $this->volumeRepository->findSelectedVolumes($mangaId,$jsonArray['volumes']);
+        //We loop through all volumes of the manga, if there is an entry for the current user in the userVolume table, we set its status according to whether or not it appears in the volumes available
         foreach ($volumes as $volume) {
-            $volume_user = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
-            if($volume_user && in_array($volume, $volumesOwned)) {
-               $volume_user->setStatus(true);
-            } elseif($volume_user && !in_array($volume, $volumesOwned)) {
-                $volume_user->setStatus(false);
-            }
-            
-        }
-          
+            $user_volume = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
+            if($user_volume && in_array($volume, $volumesAvailable)) {
+               $user_volume->setStatus(true);
+            } elseif($user_volume && !in_array($volume, $volumesAvailable)) {
+                $user_volume->setStatus(false);
+            }    
+        }  
         $this->em->flush();
         return $this->json("Vos disponibilités pour le manga ". $manga->getTitle() ." ont bien été mises à jour", 200);   
     }
@@ -128,17 +122,15 @@ class MangaController extends AbstractController
      */
     public function delete(int $id, int $mangaId): Response
     {
-         //We find the manga that was selected and its attached volumes   
-         $manga = $this->mangaRepository->find($mangaId);
-       
-         $volumes = $manga->getVolumes();
-
-         //We remove the current user from all volumes attached to the manga
-         foreach ($volumes as $volume) {
-             $volume_user = $this->userVolume->findOneBy(['user'=>$this->userRepository->find($id), 'volume'=>$volume]);
-             $volume_user ? $this->em->remove($volume_user):'';
-         }
-         $this->em->flush();
+        //We find the manga that was selected and its attached volumes   
+        $manga = $this->mangaRepository->find($mangaId);
+        $volumes = $manga->getVolumes();
+        //We remove the current user from all volumes attached to the manga
+        foreach ($volumes as $volume) {
+            $user_volume = $this->userVolume->findOneBy(['user'=>$this->userRepository->find($id), 'volume'=>$volume]);
+            $user_volume ? $this->em->remove($user_volume):'';
+        }
+        $this->em->flush();
         return $this->json("Le manga" . $manga->getTitle() ." a été supprimé de votre collection", 204);
     }
 }
