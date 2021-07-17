@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=ChatRepository::class)
  */
@@ -17,6 +18,7 @@ class Chat
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"chats", "one-chat"})
      */
     private $id;
 
@@ -27,21 +29,25 @@ class Chat
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"chats", "one-chat"})
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"chats", "one-chat"})
      */
     private $updated_at;
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, mappedBy="chats")
+     * @Groups({"chats", "one-chat"})
      */
     private $users;
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="chat", orphanRemoval=true)
+     * @Groups({"one-chat"})
      */
     private $messages;
 
