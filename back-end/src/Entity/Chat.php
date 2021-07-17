@@ -47,7 +47,7 @@ class Chat
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="chat", orphanRemoval=true)
-     * @Groups({"one-chat"})
+     * @Groups({"chats", "one-chat"})
      */
     private $messages;
 

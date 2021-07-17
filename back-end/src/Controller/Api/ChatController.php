@@ -46,10 +46,9 @@ class ChatController extends AbstractController
      */
     public function list($id): Response
     {
+        
         $user = $this->userRepository->find($id);
-
         $chats = $user->getChats();
-
         return $this->json($chats, 200, [], [
             'groups' => 'chats'
         ]);
@@ -61,7 +60,7 @@ class ChatController extends AbstractController
      */
     public function details($chatId)
     {
-        $chat = $this->chatRepository->findOneWithMessage($chatId);
+        $chat = $this->chatRepository->findOneWithMessages($chatId);
         
         return $this->json($chat, 200, [], [
             'groups' => 'one-chat'
