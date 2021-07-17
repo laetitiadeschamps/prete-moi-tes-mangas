@@ -23,16 +23,13 @@ class ChatRepository extends ServiceEntityRepository
      * method to get one chat from one user
      *
      */
-    public function findOneByUser($userId, $chatId){
+    public function findOneWithMessage($chatId){
 
         return $this->createQueryBuilder('c')
             ->where('c.id = :id')
             ->setParameter(':id', $chatId)
-            //->innerJoin('c.users', 'u', 'WITH', 'u.id = :userId')
             ->leftJoin('c.messages', 'm', 'WITH', 'm.chat=c.id')
-            //->addSelect('u')
             ->addSelect('m')
-            //->setParameter(':userId', $userId)
             ->getQuery()
             ->getOneOrNullResult();
     }

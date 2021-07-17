@@ -22,13 +22,13 @@ class Message
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank(message="un message ne peut être vide")
      * @Groups({"chats", "one-chat"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"chats"})
      */
     private $object;
@@ -55,6 +55,7 @@ class Message
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"one-chat"})
+     * @Assert\NotBlank
      * 
      */
     private $author;
@@ -62,6 +63,7 @@ class Message
     /**
      * @ORM\ManyToOne(targetEntity=Chat::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotBlank
      * 
      */
     private $chat;
