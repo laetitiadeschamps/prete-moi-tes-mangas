@@ -26,33 +26,33 @@ class Manga
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $author;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $synopsis;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "users"})
      */
     private $volume_number;
 

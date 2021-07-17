@@ -12,7 +12,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"email", "pseudo"}, message="L'email et le pseudo doivent être uniques")
@@ -23,7 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats", "one-chat"})
+     * @Groups({"chats", "one-chat", "users"})
      */
     private $id;
 
@@ -33,12 +32,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *     message = "'{{ value }}' n'est pas un email valide."
      * )
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $roles = [];
 
@@ -50,6 +51,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
      *      message="Le mot de passe doit faoire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=&*      -"
      *  )
+     * @Groups({"users"})
      */
     private $password;
 
@@ -62,7 +64,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
+<<<<<<< HEAD
+     * @Groups({"users"})
+=======
      * @Groups({"chats", "one-chat"})
+>>>>>>> dev
     */
     private $pseudo;
 
@@ -73,6 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      max = 50,
      *      maxMessage = "Votre nom doit faire moins de  {{ limit }} caractères."
      * )
+     * @Groups({"users"})
      */
     private $lastname;
 
@@ -83,23 +90,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      max = 50,
      *      maxMessage = "Votre prénom doit faire moins de {{ limit }} caractères."
      * )
+     * @Groups({"users"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"users"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+<<<<<<< HEAD
+     * @Groups({"users"})
+=======
      * @Groups({"chats", "one-chat"})
+>>>>>>> dev
      */
     private $picture;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $address;
 
@@ -110,17 +124,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
      * )
+     * @Groups({"users"})
      */
     private $zip_code;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"users"})
      */
     private $holiday_mode;
 
@@ -128,18 +145,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="smallint")
      * @Assert\Regex("/^(0|1)$/")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $status;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $latitude;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $longitude;
 
@@ -168,6 +188,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
+     * @Groups({"users"})
      */
     private $volumes;
 
