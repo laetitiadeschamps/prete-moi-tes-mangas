@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -108,5 +109,17 @@ class ChatController extends AbstractController
                 201
             );
         }
+    }
+
+    /**
+     * @Route("/test", methods="GET")
+     *
+     * @return void
+     */
+    public function test(Localisator $localisator){
+
+        $gps = $localisator->gpsByAdress("3 rue du palais", "81500");
+        extract($gps);
+        
     }
 }
