@@ -28,29 +28,35 @@ class Localisator
             $this->apiUrl . $adress . "&postcode=" . $zipcode
         );
         $array = $response->toArray();
-   
+        return $this->getCoordinates($array);
+        
+    }
+     /**
+     * method to get a latitude and longitude from an adress and zipcode
+     *
+     * @param string $adress
+     * @param string $zipcode
+     * @return array [latitude, longitude]
+     */
+    public function gpsByZipcode(string $city, string $zipcode){
+
+        $response = $this->client->request(
+            'GET',   
+            $this->apiUrl . $city . "&postcode=" . $zipcode . "&type=municipality"
+        );
+        $array = $response->toArray();
+        return $this->getCoordinates($array);
+ 
+    }
+
+    
+    protected function getCoordinates($array) {
         $long = $array['features'][0]['geometry']['coordinates'][0];
         $lat = $array['features'][0]['geometry']['coordinates'][1];
+
         return [
             "latitude" => $lat,
             "longitude" =>$long
         ];
-        
-    }
-    /**
-     * Method allowing to fetch informations from jikan API about a manga using its title
-     *
-     * @param string manga title
-     * @return Array
-     */
-    public function fetch($title)
-    {
-        $response = $this->client->request(
-            'GET',   
-            $this->apiUrl . 'q=' . $title
-        );
-
-        
-        return $response->toArray();
     }
 }

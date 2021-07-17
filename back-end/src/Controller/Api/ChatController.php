@@ -111,15 +111,5 @@ class ChatController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/test", methods="GET")
-     *
-     * @return void
-     */
-    public function test(Localisator $localisator){
 
-        $gps = $localisator->gpsByAdress("3 rue du palais", "81500");
-        extract($gps);
-        
-    }
 }
