@@ -36,6 +36,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
+    public function getUserByDistance($latitude, $longitude){
+
+        $query = $this->createQueryBuilder('u')
+         ->addSelect(
+            '( 6371 * acos(cos(radians(' . $latitude . '))' .
+            '* cos( radians( l.latitude ) )' .
+            '* cos( radians( l.longitude )' .
+            '- radians(' . $longitude . ') )' .
+            '+ sin( radians(' . $latitude . ') )' .
+            '* sin( radians( l.latitude ) ) ) ) AS HIDDEN distance'
+         )
+
+         ->having('distance < 30')
+         
+         ->orderBy('distance', 'ASC')
+         ->getQuery();
+ 
+         return $query->getResult();
+     }
     // /**
     //  * @return User[] Returns an array of User objects
     //  */
