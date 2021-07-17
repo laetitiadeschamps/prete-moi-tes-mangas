@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -40,17 +41,30 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/test", name="update", methods={"PUT|PATCH"})
+     * @Route("/update", name="update", methods={"PUT|PATCH"})
      */
     public function update(User $user, Request $request): Response
     {
-     
-         //Decode de JSON input 
-         $jsonData = $request->getContent();
-         $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user ]);
-       
+        //Decode de JSON input 
+        $jsonData = $request->getContent();
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user ]);
         $this->em->flush();
 
         return $this->json("Votre compte a bien été mis à jour", 200); 
+    }
+
+    /**
+     * @Route("/add", name="add", methods={"POST"})
+     */
+    public function add(Request $request, UserPasswordEncoderInterface $passwordEncoder, SerializerInterface $serializer): Response
+    {
+        
+        $JsonData = $request->getContent();
+        $user = $serializer->deserialize($JsonData, User::class, 'json');
+        //TODO hash password + localisation
+        $this->em->persist($user);
+        $this->em->flush();
+
+    return $this->json('L\'utilisateur '. $user->getPseudo().' a bien été créé', 201);
     }
 }
