@@ -14,21 +14,40 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ChatRepository extends ServiceEntityRepository
 {
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Chat::class);
     }
 
     /**
+     * method to get all chats of a user
+     *
+     * @param [type] $id of user
+     * @return void
+     */
+    public function findAllByUser($id){
+        return $this->createQueryBuilder('c')
+            ->andWhere(':id MEMBER OF c.users')
+            ->setParameter(':id', $id)
+            ->join('c.users', 'u')
+            ->orderBy('c.created_at', 'DESC')
+            ->addSelect('u')
+            ->getQuery()
+            ->getResult();
+    }
+   
+    /**
      * method to get one chat from one user
      *
      */
-    public function findOneWithMessage($chatId){
-
+    public function findOneWithMessages($chatId){
+       
         return $this->createQueryBuilder('c')
             ->where('c.id = :id')
             ->setParameter(':id', $chatId)
             ->leftJoin('c.messages', 'm', 'WITH', 'm.chat=c.id')
+            
             ->addSelect('m')
             ->getQuery()
             ->getOneOrNullResult();

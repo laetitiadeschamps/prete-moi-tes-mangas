@@ -22,7 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats", "one-chat", "users"})
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $id;
 
@@ -32,14 +32,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *     message = "'{{ value }}' n'est pas un email valide."
      * )
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $roles = [];
 
@@ -51,7 +51,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
      *      message="Le mot de passe doit faoire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=&*      -"
      *  )
-     * @Groups({"users"})
+     * @Groups({"users",  "search"})
      */
     private $password;
 

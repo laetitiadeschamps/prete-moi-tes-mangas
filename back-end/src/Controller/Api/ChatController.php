@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,11 +46,19 @@ class ChatController extends AbstractController
      */
     public function list($id): Response
     {
-        $user = $this->userRepository->find($id);
-
-        $chats = $user->getChats();
-
-        return $this->json($chats, 200, [], [
+        // fetching all chats from one user
+        $chats = $this->chatRepository->findAllByUser($id);
+        
+        //fetching the last message of each conversation
+        
+        foreach($chats as $chat){
+            $messageArray[$chat->getId()]['chat'] = $chat;
+            $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());
+        }
+        
+        
+        
+        return $this->json($messageArray, 200, [], [
             'groups' => 'chats'
         ]);
     }
@@ -60,7 +69,7 @@ class ChatController extends AbstractController
      */
     public function details($chatId)
     {
-        $chat = $this->chatRepository->findOneWithMessage($chatId);
+        $chat = $this->chatRepository->findOneWithMessages($chatId);
         
         return $this->json($chat, 200, [], [
             'groups' => 'one-chat'
@@ -109,4 +118,6 @@ class ChatController extends AbstractController
             );
         }
     }
+
+
 }

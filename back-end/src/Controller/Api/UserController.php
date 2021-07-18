@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +24,7 @@ class UserController extends AbstractController
     private $em;
     private $serializer;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator)
     {
         $this->userRepository = $userRepository;
         $this->serializer=$serializer;
@@ -47,7 +48,8 @@ class UserController extends AbstractController
     {
         //Decode de JSON input 
         $jsonData = $request->getContent();
-        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user ]);
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]);
+        
         $this->em->flush();
 
         return $this->json("Votre compte a bien été mis à jour", 200); 
@@ -61,7 +63,16 @@ class UserController extends AbstractController
         
         $JsonData = $request->getContent();
         $user = $serializer->deserialize($JsonData, User::class, 'json');
-        //TODO hash password + localisation
+        //localisation
+
+        $user->setPassword(
+            $passwordEncoder->encodePassword(
+                $user,
+                $user->getPassword()
+            )
+        );
+        $user->setLatitude();
+        $user->setLongitude();
         $this->em->persist($user);
         $this->em->flush();
 
