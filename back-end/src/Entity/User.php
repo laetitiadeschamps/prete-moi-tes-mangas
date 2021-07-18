@@ -64,11 +64,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
-<<<<<<< HEAD
      * @Groups({"users"})
-=======
      * @Groups({"chats", "one-chat"})
->>>>>>> dev
     */
     private $pseudo;
 
@@ -102,11 +99,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-<<<<<<< HEAD
      * @Groups({"users"})
-=======
      * @Groups({"chats", "one-chat"})
->>>>>>> dev
      */
     private $picture;
 

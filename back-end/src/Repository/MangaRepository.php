@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Manga;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 
 /**
  * @method Manga|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,6 +19,7 @@ class MangaRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Manga::class);
     }
+
 
     // /**
     //  * @return Manga[] Returns an array of Manga objects
