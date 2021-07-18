@@ -36,6 +36,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
+    public function findByDistance($startlat, $startlon)
+    {
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery(
+            'SELECT user.latitude, user.longitude, SQRT(POW(69.1 * (user.latitude - :startlat), 2)+POW(69.1 * (:startlon - user.longitude)* COS(user.latitude / 57.3), 2)) AS distance
+            FROM App\Entity\User user HAVING distance < 25 ORDER BY distance
+            '
+        )->setParameter(':startlat', $startlat)->setParameter(':startlon', $startlon);
+
+        return $query->getResult();
+    }
+
     // /**
     //  * @return User[] Returns an array of User objects
     //  */

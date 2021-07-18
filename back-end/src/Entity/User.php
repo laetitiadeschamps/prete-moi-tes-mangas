@@ -142,14 +142,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $status;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"users"})
      */
     private $latitude;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"users"})
      */

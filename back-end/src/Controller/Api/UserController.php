@@ -67,4 +67,19 @@ class UserController extends AbstractController
 
     return $this->json('L\'utilisateur '. $user->getPseudo().' a bien été créé', 201);
     }
+
+    /**
+     * @Route("/test", name="test", methods={"POST"})
+     */
+    public function test(Request $request, UserRepository $userRepository, SerializerInterface $serializer): Response
+    {
+        $jsonArray = json_decode($request->getContent(), true);
+        $startlat =$jsonArray['startlat']; 
+        $startlon=$jsonArray['startlon'];;
+        $result = $userRepository->findByDistance($startlat, $startlon);
+        dd($result);
+       
+
+    return $this->json('L\'utilisateur a bien été créé', 201);
+    }
 }
