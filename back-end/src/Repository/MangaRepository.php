@@ -21,7 +21,6 @@ class MangaRepository extends ServiceEntityRepository
     }
 
 
-
     // /**
     //  * @return Manga[] Returns an array of Manga objects
     //  */
