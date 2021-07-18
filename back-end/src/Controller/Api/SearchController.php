@@ -41,7 +41,7 @@ class SearchController extends AbstractController
     {
         $coordinates = $localisator->gpsByZipcode($zipcode);
         extract($coordinates);
-        dd($userRepository->getUserByDistance(2,40));
+        dd($userRepository->search(2,43));
     }
 
 }
