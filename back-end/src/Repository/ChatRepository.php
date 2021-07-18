@@ -31,11 +31,8 @@ class ChatRepository extends ServiceEntityRepository
             ->andWhere(':id MEMBER OF c.users')
             ->setParameter(':id', $id)
             ->join('c.users', 'u')
-            
             ->orderBy('c.created_at', 'DESC')
-            
             ->addSelect('u')
-            
             ->getQuery()
             ->getResult();
     }
