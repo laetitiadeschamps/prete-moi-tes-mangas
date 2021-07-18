@@ -22,7 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats", "one-chat", "users"})
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $id;
 
@@ -65,7 +65,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
      * @Groups({"users"})
-     * @Groups({"chats", "one-chat"})
+     * @Groups({"chats", "one-chat", "search"})
     */
     private $pseudo;
 

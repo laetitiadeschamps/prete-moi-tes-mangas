@@ -37,13 +37,33 @@ class SearchController extends AbstractController
      *
      * @return void
      */
-    public function byPostCode($zipcode, Localisator $localisator, UserRepository $userRepository)
+    public function byPostCode($zipcode, Localisator $localisator, UserRepository $userRepository, VolumeRepository $volumeRepository)
     {
         $coordinates = $localisator->gpsByZipcode($zipcode);
         extract($coordinates);
        $users = $userRepository->search(2, 43);
-       
+       $arrayResult = [];
+       $volumes = $users[1]->getVolumes();
+       foreach($users as $user){
+           $volumes = $user->getVolumes();
+            dd($volumes);
+           foreach($volumes as  $volume){
+            
+            //! créer un service permettant de récupérer les mangas associés à un tome?
+            $mangaName = $volume->getVolume()->getManga()->getTitle();
+            $mangaObj = $volume->getVolume()->getManga();
+            $arrayResult[$key][$mangaName]=$mangaObj;
+            
+            $arrayResult[$key]["user"]=$user;
+            $arrayResult[$key]["tomes"][]=$volume;
 
+        }
+       }
+        
+       dd($arrayResult);
+       return $this->json($arrayResult, 200, [], [
+        'groups' => 'search'
+    ]);
     }
 
 }

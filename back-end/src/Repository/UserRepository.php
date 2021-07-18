@@ -41,7 +41,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function search($latitude, $longitude)
     {
         $table = $this->getClassMetadata()->table["name"];
-       
+        // $sql = "SELECT u.* "
+        // .",(
+        //     6371 *
+        //     acos(cos(radians(:lat)) * 
+        //     cos(radians(u.latitude)) * 
+        //     cos(radians(u.longitude) - 
+        //     radians(:long)) + 
+        //     sin(radians(:lat)) * 
+        //     sin(radians(u.latitude)))
+        //     ) AS distance "
+        // ."FROM " . $table . " AS u "
+        // ."HAVING distance < 30 "
+        // ."ORDER BY distance;";
         $sql = "SELECT u.* "
         .",(
             6371 *
@@ -52,9 +64,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             sin(radians(:lat)) * 
             sin(radians(u.latitude)))
             ) AS distance "
-            ."FROM " . $table . " AS u "
+        ."FROM " . $table . " AS u "
+        ."LEFT JOIN user_volume AS uservolume "
+        ."ON u.id = uservolume.user_id "
         ."HAVING distance < 30 "
-        ."ORDER BY distance;";
+        ."ORDER BY distance; "
+        ;
 
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
         $rsm->addEntityResult(User::class, "u");

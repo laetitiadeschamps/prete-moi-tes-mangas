@@ -19,13 +19,15 @@ class Volume
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"search"})
+     * 
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $number;
 
@@ -43,7 +45,7 @@ class Volume
     /**
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="volumes")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $manga;
 
