@@ -52,12 +52,13 @@ class ChatController extends AbstractController
         //fetching the last message of each conversation
         $messagesArray = [];
         foreach($chats as $chat){
-            $messagesArray[$chat->getId()] = $this->messageRepository->getLastMessage($chat->getId());
+            $messageArray[$chat->getId()]['chat'] = $chat;
+            $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());
         }
         
         
-        $array = [$chats, $messagesArray];
-        return $this->json($array, 200, [], [
+        
+        return $this->json($messageArray, 200, [], [
             'groups' => 'chats'
         ]);
     }
