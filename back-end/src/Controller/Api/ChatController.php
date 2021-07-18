@@ -46,10 +46,18 @@ class ChatController extends AbstractController
      */
     public function list($id): Response
     {
+        // fetching all chats from one user
+        $chats = $this->chatRepository->findAllByUser($id);
         
-        $user = $this->userRepository->find($id);
-        $chats = $user->getChats();
-        return $this->json($chats, 200, [], [
+        //fetching the last message of each conversation
+        $messagesArray = [];
+        foreach($chats as $chat){
+            $messagesArray[$chat->getId()] = $this->messageRepository->getLastMessage($chat->getId());
+        }
+        
+        
+        $array = [$chats, $messagesArray];
+        return $this->json($array, 200, [], [
             'groups' => 'chats'
         ]);
     }
