@@ -45,9 +45,9 @@ class UserController extends AbstractController
     public function update(User $user, Request $request): Response
     {
      
-         //Decode de JSON input 
-         $jsonData = $request->getContent();
-         $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user ]);
+        //Decode de JSON input 
+        $jsonData = $request->getContent();
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]);
        
         $this->em->flush();
 

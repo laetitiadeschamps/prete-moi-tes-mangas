@@ -19,6 +19,22 @@ class MessageRepository extends ServiceEntityRepository
         parent::__construct($registry, Message::class);
     }
 
+    /**
+     * method to get the last message of one chat
+     *
+     * @param [type] $chatId
+     * @return void
+     */
+    public function getLastMessage($chatId){
+
+        return $this->createQueryBuilder('m')
+                    ->where('m.chat = :chatId')
+                    ->setParameter(':chatId', $chatId)
+                    ->orderBy('m.created_at', 'DESC')
+                    ->setMaxResults(1)
+                    ->getQuery()
+                    ->getOneOrNullResult();
+    }
     // /**
     //  * @return Message[] Returns an array of Message objects
     //  */
