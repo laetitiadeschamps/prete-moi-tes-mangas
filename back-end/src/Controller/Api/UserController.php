@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\ChatRepository;
 use App\Repository\UserRepository;
 use App\Repository\UserVolumeRepository;
 use App\Service\Localisator;
@@ -28,8 +29,9 @@ class UserController extends AbstractController
     private $localisator;
     private $validator;
     private $userVolumeRepository;
+    private $chatRepository;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer=$serializer;
@@ -37,19 +39,25 @@ class UserController extends AbstractController
         $this->localisator = $localisator;
         $this->validator = $validator;
         $this->userVolumeRepository = $userVolumeRepository;
+        $this->chatRepository = $chatRepository;
     }
     /**
      * @Route("/{id}/", name="details", methods={"GET"})
      */
     public function details(int $id): Response
     {
-       $user = $this->userRepository->find($id);
-        if(!$user) {
+        $user = $this->userRepository->find(1);
+       $contact = $this->userRepository->find($id);
+        if(!$contact) {
             return $this->json(
                 ['error' => 'Cet utilisateur n\'existe pas'], 404
             );
         }
-        return $this->json($user, 200, [], [
+        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
+        $infos['contact'] = $contact;
+        $infos['chat'] = $chat;
+        dd($infos);
+        return $this->json($infos, 200, [], [
             'groups'=>'users'
         ]); 
     }
