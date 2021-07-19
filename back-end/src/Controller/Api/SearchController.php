@@ -45,8 +45,9 @@ class SearchController extends AbstractController
        $arrayResult = [];
        $volumes = $users[1]->getVolumes();
        foreach($users as $user){
+           
            $volumes = $user->getVolumes();
-            dd($volumes);
+            
            foreach($volumes as  $volume){
             
             //! créer un service permettant de récupérer les mangas associés à un tome?
