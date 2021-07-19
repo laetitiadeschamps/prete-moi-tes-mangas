@@ -19,6 +19,8 @@ class Volume
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * 
+     * 
      */
     private $id;
 
@@ -49,7 +51,7 @@ class Volume
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="volume", orphanRemoval=true)
-     * @Groups({"search"})
+     * 
      */
     private $users;
 

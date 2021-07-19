@@ -54,9 +54,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             sin(radians(:lat)) * 
             sin(radians(u.latitude)))
             ) AS distance "
-            ."FROM " . $table . " AS u "
+        ."FROM " . $table . " AS u "
+        ."LEFT JOIN user_volume AS uservolume "
+        ."ON u.id = uservolume.user_id "
         ."HAVING distance < 30 "
-        ."ORDER BY distance;";
+        ."ORDER BY distance; "
+        ;
 
         // mapping of the user entity to get object datas
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());

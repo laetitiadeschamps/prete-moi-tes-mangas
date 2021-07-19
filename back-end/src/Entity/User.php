@@ -110,7 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $address;
 
     /**
-     * @ORM\Column(type="smallint", options={"unsigned":true})
+     * @ORM\Column(type="integer", options={"unsigned":true})
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
@@ -144,7 +144,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $latitude;
 
@@ -180,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $volumes;
 
@@ -405,24 +405,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLatitude(): ?int
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(int $latitude): self
+    public function setLatitude(float $latitude): self
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    public function getLongitude(): ?int
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(int $longitude): self
+    public function setLongitude(float $longitude): self
     {
         $this->longitude = $longitude;
 

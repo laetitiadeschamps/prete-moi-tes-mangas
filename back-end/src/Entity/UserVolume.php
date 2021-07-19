@@ -20,7 +20,7 @@ class UserVolume
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $status;
 
@@ -43,7 +43,7 @@ class UserVolume
     /**
      * @ORM\ManyToOne(targetEntity=Volume::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $volume;
 
