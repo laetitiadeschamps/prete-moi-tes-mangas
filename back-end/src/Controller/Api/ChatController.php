@@ -109,7 +109,6 @@ class ChatController extends AbstractController
         }
         
         $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
-        
         $chat = new Chat();
         $chat->setTitle($title);
         $chat->addUser($user);

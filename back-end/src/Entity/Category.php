@@ -44,6 +44,11 @@ class Category
      */
     private $mangas;
 
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $rating;
+
     public function __construct()
     { 
         $this->created_at = new DateTime();
@@ -112,6 +117,18 @@ class Category
     public function removeManga(Manga $manga): self
     {
         $this->mangas->removeElement($manga);
+
+        return $this;
+    }
+
+    public function getRating(): ?float
+    {
+        return $this->rating;
+    }
+
+    public function setRating(float $rating): self
+    {
+        $this->rating = $rating;
 
         return $this;
     }

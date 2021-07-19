@@ -4,7 +4,9 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\ChatRepository;
 use App\Repository\UserRepository;
+use App\Repository\UserVolumeRepository;
 use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,27 +28,36 @@ class UserController extends AbstractController
     private $serializer;
     private $localisator;
     private $validator;
+    private $userVolumeRepository;
+    private $chatRepository;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer=$serializer;
         $this->em = $em;
         $this->localisator = $localisator;
         $this->validator = $validator;
+        $this->userVolumeRepository = $userVolumeRepository;
+        $this->chatRepository = $chatRepository;
     }
     /**
      * @Route("/{id}/", name="details", methods={"GET"})
      */
     public function details(int $id): Response
     {
-       $user = $this->userRepository->find($id);
-        if(!$user) {
+        $user = $this->userRepository->find(1);
+       $contact = $this->userRepository->find($id);
+        if(!$contact) {
             return $this->json(
                 ['error' => 'Cet utilisateur n\'existe pas'], 404
             );
         }
-        return $this->json($user, 200, [], [
+        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
+        $infos['contact'] = $contact;
+        $infos['chat'] = $chat;
+        dd($infos);
+        return $this->json($infos, 200, [], [
             'groups'=>'users'
         ]); 
     }
@@ -54,26 +65,43 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}/update", name="update", methods={"PUT|PATCH"})
      */
-    public function update(User $user, Request $request): Response
+    public function update(User $user, Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
       
-        //TODO handle holiday mode
-        //Decode de JSON input 
+        //Decode de JSON input to check if the password has been changed
+        $jsonArray = json_decode($request->getContent(), true);
+        $needsHash = false;
+        if(isset($jsonArray['password'])) {
+            $needsHash = true;
+        };  
         $jsonData = $request->getContent();
-        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]);
-
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        // editing our user with given updated informations
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+        $user->setZipCode(intval($jsonArray['zip_code']));
+        //We validate the inputs according to our constraints
+        $errors = $this->validator->validate($user);
+        //If there are any errors, we send back a list of errors (reformatted for clearer output)
         
+        if (count($errors) > 0) {
+            $errorslist = array();
+            foreach ($errors as $error) {
+                $field = $error->getPropertyPath();
+                $errorslist[$field] = $error->getMessage();
+            }
+            return $this->json($errorslist, 400);
+        }
+        //If a new password has been given, we hash it before sending to DB
+        if($needsHash) {
+            $user->setPassword(
+                $passwordEncoder->encodePassword(
+                    $user,
+                    $user->getPassword()
+                )
+            );
+        }
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         $user->setLatitude($coordinates['latitude']);
         $user->setLongitude($coordinates['longitude']);
-        
-
-        if($user->getHolidayMode() == 1) {
-            // we set the status of all volume users to 0
-        } else {
-             // we set the status of all volume users to 1
-        }
-
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200); 
     }
@@ -87,7 +115,6 @@ class UserController extends AbstractController
         $JsonData = $request->getContent();
         $user = $this->serializer->deserialize($JsonData, User::class, 'json');
         //hashing password and setting it for the newly created user
-        
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         $user->setLatitude($coordinates['latitude']);
@@ -106,8 +133,7 @@ class UserController extends AbstractController
         }
         $user->setPassword(
             $passwordEncoder->encodePassword(
-                $user,
-                $user->getPassword()
+                $user, $user->getPassword()
             )
         );
         $this->em->persist($user);
