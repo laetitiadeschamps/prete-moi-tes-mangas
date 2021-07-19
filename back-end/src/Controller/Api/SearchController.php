@@ -44,16 +44,22 @@ class SearchController extends AbstractController
        
         $users = $userRepository->search($latitude, $longitude);
         
+        //TODO gérer si au moins 1 tome dispo
         $mangas=[];
         foreach($users as $user) {
             
+            // only users with active status
+            if($user->getStatus == 1){
+
+                foreach($user->getVolumes() as $volume) {
+                    $mangas[$volume->getVolume()->getManga()->getTitle()]['manga'] = $volume->getVolume()->getManga();
+                    $mangas[$volume->getVolume()->getManga()->getTitle()]['users'][$user->getId()]['user']= $user;
+                    $mangas[$volume->getVolume()->getManga()->getTitle()]['users'][$user->getId()]['volumes'][]= $volume->getVolume()->getNumber();
+                
+                }
+
+            }
             
-        foreach($user->getVolumes() as $volume) {
-            $mangas[$volume->getVolume()->getManga()->getTitle()]['manga']=$volume->getVolume()->getManga();
-            $mangas[$volume->getVolume()->getManga()->getTitle()]['users'][$user->getId()]['user']= $user;
-           $mangas[$volume->getVolume()->getManga()->getTitle()]['users'][$user->getId()]['volumes'][]= $volume->getVolume()->getNumber();
-           
-        }
         }
 
        //$users = $userRepository->search(2, 43);

@@ -46,6 +46,11 @@ class ChatController extends AbstractController
      */
     public function list($id): Response
     {
+        if(!$this->userRepository->find($id)){
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'], 404
+            );
+        } 
         // fetching all chats from one user
         $chats = $this->chatRepository->findAllByUser($id);
         
@@ -67,10 +72,21 @@ class ChatController extends AbstractController
      * method to get one chat of a user
      * @Route("/chat/{chatId}", name="details", methods="GET")
      */
-    public function details($chatId)
+    public function details(int $id, $chatId)
     {
+        $user = $this->userRepository->find($id);
+        if(!$user){
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'], 404
+            );
+        } 
+
         $chat = $this->chatRepository->findOneWithMessages($chatId);
-        
+        if(!$chat){
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'], 404
+            );
+        }
         return $this->json($chat, 200, [], [
             'groups' => 'one-chat'
         ]);
@@ -82,11 +98,17 @@ class ChatController extends AbstractController
      */
     public function add(Request $request, ValidatorInterface $validator, $id, $chatId)
     {
+
         //first, i get the concerned chat
         $chat = $this->chatRepository->find($chatId);
         // then the concerned user
         $author = $this->userRepository->find($id);
-        
+
+        if(!$chat || !$author){
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'], 404
+            );
+        } 
         $jsonData = $request->getContent();
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
@@ -97,11 +119,21 @@ class ChatController extends AbstractController
         
         //datas validation
         $errors = $validator->validate($message);
+
+        //errorArray to send to front useful messages of error (instead of ConstraintViolationListInterface)
+        
         if (count($errors) > 0) {
-            $errorsString = (string) $errors;
+            $errorArray = [];
+            foreach ($errors as $error) {
+                // name of field where there is an error
+                $field = $error->getPropertyPath();
+                
+                // getting the message error
+                $errorArray[$field] = $error->getMessage();
+            }
             return $this->json(
                 [
-                    'error' => $errorsString
+                    'error' => $errorArray
                 ],
                 500
             );
