@@ -26,6 +26,20 @@ class VolumeRepository extends ServiceEntityRepository
        
         return $query->getResult();
       }
+      public function search($users)
+      {
+          foreach($users as $user) {
+              $userIds[] = $user->getId();
+          }
+          $userIds = implode(", ", $userIds);
+  
+;          
+          $qb = $this->createQueryBuilder('volume')->join('volume.users', 'users')->addSelect('users')->where('users');
+          $query = $qb->getQuery();
+         
+          return $query->getResult();
+      }
+  
     
 
     // /**

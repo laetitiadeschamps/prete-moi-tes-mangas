@@ -51,6 +51,7 @@ class Volume
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="volume", orphanRemoval=true)
+     * @Groups({"search"})
      */
     private $users;
 

@@ -20,15 +20,7 @@ class MangaRepository extends ServiceEntityRepository
         parent::__construct($registry, Manga::class);
     }
 
-    public function getMangasByUser(){
-
-        return $this->createQueryBuilder('m')
-        ->join('m.volumes', 'v')
-        ->orderBy('c.created_at', 'DESC')
-        ->addSelect('u')
-        ->getQuery()
-        ->getResult();
-    }
+   
     // /**
     //  * @return Manga[] Returns an array of Manga objects
     //  */

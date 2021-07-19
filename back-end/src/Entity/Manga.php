@@ -45,14 +45,14 @@ class Manga
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $synopsis;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $volume_number;
 
@@ -68,7 +68,7 @@ class Manga
 
     /**
      * @ORM\ManyToMany(targetEntity=Category::class, mappedBy="mangas")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "search"})
      */
     private $categories;
 
