@@ -15,6 +15,7 @@
         "doctrine/orm": "^2.9",
         "jms/serializer-bundle": "^3.9",
         "lexik/jwt-authentication-bundle": "^2.12",
+        "nelmio/cors-bundle": "^2.1",
         "oro/doctrine-extensions": "^2.0",
         "phpdocumentor/reflection-docblock": "^5.2",
         "sensio/framework-extra-bundle": "^6.1",
