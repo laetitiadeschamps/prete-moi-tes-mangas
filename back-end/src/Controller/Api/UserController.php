@@ -16,22 +16,24 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
-* @Route("/api/v1/user/{id}", name="api_user-", requirements={"id"="\d+"})
+* @Route("/api/v1/user", name="api_user-", requirements={"id"="\d+"})
 */
 class UserController extends AbstractController
 {
     private $userRepository;
     private $em;
     private $serializer;
+    private $localisator;
 
     public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator)
     {
         $this->userRepository = $userRepository;
         $this->serializer=$serializer;
         $this->em = $em;
+        $this->localisator = $localisator;
     }
     /**
-     * @Route("/", name="details", methods={"GET"})
+     * @Route("/{id}/", name="details", methods={"GET"})
      */
     public function details(User $user): Response
     {
@@ -42,7 +44,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/update", name="update", methods={"PUT|PATCH"})
+     * @Route("/{id}/update", name="update", methods={"PUT|PATCH"})
      */
     public function update(User $user, Request $request): Response
     {
@@ -71,26 +73,16 @@ class UserController extends AbstractController
                 $user->getPassword()
             )
         );
-        $user->setLatitude();
-        $user->setLongitude();
+      
+        $coordinates = $this->localisator->gpsByZipcodeAndCity($user->getCity(), $user->getZipCode());
+        
+        $user->setLatitude($coordinates['latitude']);
+        $user->setLongitude($coordinates['longitude']);
         $this->em->persist($user);
         $this->em->flush();
 
     return $this->json('L\'utilisateur '. $user->getPseudo().' a bien été créé', 201);
     }
 
-    /**
-     * @Route("/test", name="test", methods={"POST"})
-     */
-    public function test(Request $request, UserRepository $userRepository, SerializerInterface $serializer): Response
-    {
-        $jsonArray = json_decode($request->getContent(), true);
-        $startlat =$jsonArray['startlat']; 
-        $startlon=$jsonArray['startlon'];;
-        $result = $userRepository->findByDistance($startlat, $startlon);
-        dd($result);
-       
 
-    return $this->json('L\'utilisateur a bien été créé', 201);
-    }
 }
