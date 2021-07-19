@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -44,9 +45,10 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}/", name="details", methods={"GET"})
      */
-    public function details(int $id): Response
+    public function details(int $id, Security $security): Response
     {
-        $user = $this->userRepository->find(1);
+       /** @var User $user */
+        $user = $security->getUser();
        $contact = $this->userRepository->find($id);
         if(!$contact) {
             return $this->json(
@@ -56,7 +58,7 @@ class UserController extends AbstractController
         $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
         $infos['contact'] = $contact;
         $infos['chat'] = $chat;
-        dd($infos);
+        dd($chat);
         return $this->json($infos, 200, [], [
             'groups'=>'users'
         ]); 
