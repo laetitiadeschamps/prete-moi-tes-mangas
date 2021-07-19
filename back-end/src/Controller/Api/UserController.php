@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Repository\UserVolumeRepository;
 use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,14 +27,16 @@ class UserController extends AbstractController
     private $serializer;
     private $localisator;
     private $validator;
+    private $userVolumeRepository;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer=$serializer;
         $this->em = $em;
         $this->localisator = $localisator;
         $this->validator = $validator;
+        $this->userVolumeRepository = $userVolumeRepository;
     }
     /**
      * @Route("/{id}/", name="details", methods={"GET"})
@@ -54,18 +57,43 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}/update", name="update", methods={"PUT|PATCH"})
      */
-    public function update(User $user, Request $request): Response
+    public function update(User $user, Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
       
-        //TODO handle holiday mode
-        //Decode de JSON input 
+        //Decode de JSON input to check if the password has been changed
+        $jsonArray = json_decode($request->getContent(), true);
+        $needsHash = false;
+        if(isset($jsonArray['password'])) {
+            $needsHash = true;
+        };  
         $jsonData = $request->getContent();
-        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]); 
-        if($user->getHolidayMode() == 1) {
-            // we set the status of all volume users to 0
-        } else {
-             // we set the status of all volume users to 1
+        // editing our user with given updated informations
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+        $user->setZipCode(intval($jsonArray['zip_code']));
+        //We validate the inputs according to our constraints
+        $errors = $this->validator->validate($user);
+        //If there are any errors, we send back a list of errors (reformatted for clearer output)
+        
+        if (count($errors) > 0) {
+            $errorslist = array();
+            foreach ($errors as $error) {
+                $field = $error->getPropertyPath();
+                $errorslist[$field] = $error->getMessage();
+            }
+            return $this->json($errorslist, 400);
         }
+        //If a new password has been given, we hash it before sending to DB
+        if($needsHash) {
+            $user->setPassword(
+                $passwordEncoder->encodePassword(
+                    $user,
+                    $user->getPassword()
+                )
+            );
+        }
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        $user->setLatitude($coordinates['latitude']);
+        $user->setLongitude($coordinates['longitude']);
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200); 
     }
@@ -79,7 +107,6 @@ class UserController extends AbstractController
         $JsonData = $request->getContent();
         $user = $this->serializer->deserialize($JsonData, User::class, 'json');
         //hashing password and setting it for the newly created user
-        
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         $user->setLatitude($coordinates['latitude']);
@@ -98,8 +125,7 @@ class UserController extends AbstractController
         }
         $user->setPassword(
             $passwordEncoder->encodePassword(
-                $user,
-                $user->getPassword()
+                $user, $user->getPassword()
             )
         );
         $this->em->persist($user);

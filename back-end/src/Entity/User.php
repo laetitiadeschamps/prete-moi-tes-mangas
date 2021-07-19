@@ -12,9 +12,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity(fields={"email", "pseudo"}, message="L'email et le pseudo doivent être uniques")
+ * @UniqueEntity("email", message="Ce mail est déjà utilisé")
+ * @UniqueEntity("pseudo", message="Ce pseudo est déjà utilisé")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -64,6 +66,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
+     * 
      * @Groups({"chats", "one-chat", "users", "search"})
     */
     private $pseudo;
@@ -110,7 +113,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $address;
 
     /**
-     * @ORM\Column(type="smallint", options={"unsigned":true})
+     * @ORM\Column(type="integer", options={"unsigned":true})
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
@@ -142,7 +145,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $status;
 
     /**
-     * @ORM\Column(type="float")
+     *@ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"users"})
      */
@@ -410,19 +413,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->latitude;
     }
 
-    public function setLatitude(int $latitude): self
+    public function setLatitude(float $latitude): self
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    public function getLongitude(): ?int
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(int $longitude): self
+    public function setLongitude(float $longitude): self
     {
         $this->longitude = $longitude;
 
