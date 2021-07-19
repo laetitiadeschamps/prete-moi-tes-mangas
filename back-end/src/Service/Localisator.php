@@ -69,8 +69,7 @@ class Localisator
      * @param [type] $array
      * @return void
      */
-    protected function getCoordinates($array)
-    {
+    protected function getCoordinates($array) {
         $long = $array['features'][0]['geometry']['coordinates'][0];
         $lat = $array['features'][0]['geometry']['coordinates'][1];
 

@@ -147,7 +147,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      *@ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $latitude;
 
@@ -183,7 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $volumes;
 
@@ -408,7 +408,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLatitude(): ?int
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
