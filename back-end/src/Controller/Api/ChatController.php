@@ -60,9 +60,7 @@ class ChatController extends AbstractController
             $messageArray[$chat->getId()]['chat'] = $chat;
             $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());
         }
-        
-        
-        
+          
         return $this->json($messageArray, 200, [], [
             'groups' => 'chats'
         ]);

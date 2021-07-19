@@ -19,7 +19,7 @@ class Volume
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"search"})
+     * 
      * 
      */
     private $id;
@@ -45,13 +45,13 @@ class Volume
     /**
      * @ORM\ManyToOne(targetEntity=Manga::class, inversedBy="volumes")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"users", "search"})
+     * @Groups({"users"})
      */
     private $manga;
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="volume", orphanRemoval=true)
-     * @Groups({"search"})
+     * 
      */
     private $users;
 

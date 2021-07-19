@@ -60,12 +60,20 @@ class UserController extends AbstractController
         //TODO handle holiday mode
         //Decode de JSON input 
         $jsonData = $request->getContent();
-        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]); 
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]);
+
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        
+        $user->setLatitude($coordinates['latitude']);
+        $user->setLongitude($coordinates['longitude']);
+        
+
         if($user->getHolidayMode() == 1) {
             // we set the status of all volume users to 0
         } else {
              // we set the status of all volume users to 1
         }
+
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200); 
     }

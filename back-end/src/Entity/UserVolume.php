@@ -20,7 +20,7 @@ class UserVolume
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $status;
 
