@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Chat;
 use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\ChatRepository;
@@ -90,6 +91,39 @@ class ChatController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/chat", name="create", methods="POST")
+     */
+    public function create(Request $request, $id){
+
+
+        $jsonData = $request->toArray();
+        $otherUserId = $jsonData['other_user'];
+        $user = $this->userRepository->find($id);
+        $otherUser = $this->userRepository->find($otherUserId);
+
+        if (!$user || !$otherUser){
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'], 404
+            );
+        }
+        
+        $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
+        
+        $chat = new Chat();
+        $chat->setTitle($title);
+        $chat->addUser($user);
+        $chat->addUser($otherUser);
+        $this->em->persist($chat);
+        $this->em->flush();
+
+        return $this->json(
+            [
+                'message' => 'La conversation a bien été créée'
+            ],
+            201
+        );
+    }
     /**
      * method to add a message from a user in a chat
      * @Route("/chat/{chatId}/message", name="add", methods="POST")
