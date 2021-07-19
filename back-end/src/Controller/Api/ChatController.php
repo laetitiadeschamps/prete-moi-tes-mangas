@@ -152,7 +152,6 @@ class ChatController extends AbstractController
         $errors = $validator->validate($message);
 
         //errorArray to send to front useful messages of error (instead of ConstraintViolationListInterface)
-        
         if (count($errors) > 0) {
             $errorArray = [];
             foreach ($errors as $error) {
