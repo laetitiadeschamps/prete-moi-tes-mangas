@@ -20,7 +20,7 @@ class MangaRepository extends ServiceEntityRepository
         parent::__construct($registry, Manga::class);
     }
 
-
+   
     // /**
     //  * @return Manga[] Returns an array of Manga objects
     //  */

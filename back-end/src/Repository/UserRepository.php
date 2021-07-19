@@ -40,8 +40,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function search($latitude, $longitude)
     {
+        // name of the current table
         $table = $this->getClassMetadata()->table["name"];
        
+        //sql query with haversine formula to get all users within 30km of the coordinates points
         $sql = "SELECT u.* "
         .",(
             6371 *
@@ -56,12 +58,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ."HAVING distance < 30 "
         ."ORDER BY distance;";
 
+        // mapping of the user entity to get object datas
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
         $rsm->addEntityResult(User::class, "u");
 
         foreach ($this->getClassMetadata()->fieldMappings as $obj) {
             $rsm->addFieldResult("u", $obj["columnName"], $obj["fieldName"]);
         }
+
+        //native query
         $stmt = $this->getEntityManager()->createNativeQuery($sql, $rsm);
         $stmt->setParameter(":lat", $latitude);
         $stmt->setParameter(":long", $longitude);

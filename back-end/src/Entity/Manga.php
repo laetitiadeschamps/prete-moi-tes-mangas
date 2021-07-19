@@ -19,40 +19,40 @@ class Manga
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "search"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $author;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $synopsis;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $volume_number;
 
@@ -68,7 +68,7 @@ class Manga
 
     /**
      * @ORM\ManyToMany(targetEntity=Category::class, mappedBy="mangas")
-     * @Groups({"mangas"})
+     * @Groups({"mangas", "search"})
      */
     private $categories;
 

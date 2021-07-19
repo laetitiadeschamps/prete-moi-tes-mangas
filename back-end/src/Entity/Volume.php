@@ -25,7 +25,7 @@ class Volume
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Ce champ doit être renseigné.")
-     * @Groups({"mangas", "users"})
+     * @Groups({"mangas", "users", "search"})
      */
     private $number;
 
@@ -49,6 +49,7 @@ class Volume
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="volume", orphanRemoval=true)
+     * @Groups({"search"})
      */
     private $users;
 

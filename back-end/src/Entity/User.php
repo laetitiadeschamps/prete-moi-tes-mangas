@@ -22,7 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"chats", "one-chat", "users"})
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $id;
 
@@ -44,12 +44,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $roles = [];
 
     /**
-     * @var string The hashed password
+     * @var string Thse hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      *  @Assert\Regex(
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
-     *      message="Le mot de passe doit faoire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=&*      -"
+     *      message="Le mot de passe doit faire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=-"
      *  )
      * @Groups({"users"})
      */
@@ -64,8 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
-     * @Groups({"users"})
-     * @Groups({"chats", "one-chat"})
+     * @Groups({"chats", "one-chat", "users", "search"})
     */
     private $pseudo;
 
@@ -99,8 +98,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"users"})
-     * @Groups({"chats", "one-chat"})
+     * @Groups({"chats", "one-chat", "users"})
      */
     private $picture;
 
@@ -125,7 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $city;
 
@@ -153,7 +151,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $longitude;
 
