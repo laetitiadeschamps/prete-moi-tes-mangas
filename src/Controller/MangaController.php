@@ -26,9 +26,9 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/add", name="new", methods={"GET","POST"})
+     * @Route("/add", name="add", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function add(Request $request): Response
     {
         $manga = new Manga();
         $form = $this->createForm(MangaType::class, $manga);
@@ -42,7 +42,7 @@ class MangaController extends AbstractController
             return $this->redirectToRoute('manga_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('manga/new.html.twig', [
+        return $this->renderForm('manga/add.html.twig', [
             'manga' => $manga,
             'form' => $form,
         ]);
@@ -59,7 +59,7 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/update", name="manga_update", methods={"GET|POST"})
+     * @Route("/{id}/update", name="update", methods={"GET|POST"})
      */
     public function update(Request $request, Manga $manga): Response
     {
@@ -72,7 +72,7 @@ class MangaController extends AbstractController
             return $this->redirectToRoute('manga_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('manga/edit.html.twig', [
+        return $this->renderForm('manga/update.html.twig', [
             'manga' => $manga,
             'form' => $form,
         ]);
