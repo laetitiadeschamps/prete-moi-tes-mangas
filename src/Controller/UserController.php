@@ -26,9 +26,9 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="user_new", methods={"GET","POST"})
+     * @Route("/add", name="user_add", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function add(Request $request): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -42,7 +42,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('user/new.html.twig', [
+        return $this->renderForm('user/add.html.twig', [
             'user' => $user,
             'form' => $form,
         ]);
@@ -59,9 +59,9 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="user_edit", methods={"GET","POST"})
+     * @Route("/{id}/update", name="user_update", methods={"GET","POST"})
      */
-    public function edit(Request $request, User $user): Response
+    public function update(Request $request, User $user): Response
     {
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -72,7 +72,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('user/edit.html.twig', [
+        return $this->renderForm('user/update.html.twig', [
             'user' => $user,
             'form' => $form,
         ]);
