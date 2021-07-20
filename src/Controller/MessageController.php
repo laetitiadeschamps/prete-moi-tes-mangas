@@ -11,12 +11,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/message")
+ * 
  */
 class MessageController extends AbstractController
 {
     /**
-     * @Route("/", name="message_index", methods={"GET"})
+     * @Route("/", name="index", methods={"GET"})
      */
     public function index(MessageRepository $messageRepository): Response
     {
@@ -26,9 +26,9 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="message_new", methods={"GET","POST"})
+     * @Route("/message/add", name="message_add", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function add(Request $request): Response
     {
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
@@ -42,14 +42,14 @@ class MessageController extends AbstractController
             return $this->redirectToRoute('message_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('message/new.html.twig', [
+        return $this->renderForm('message/add.html.twig', [
             'message' => $message,
             'form' => $form,
         ]);
     }
 
     /**
-     * @Route("/{id}", name="message_show", methods={"GET"})
+     * @Route("/message/{id}", name="message_show", methods={"GET"})
      */
     public function show(Message $message): Response
     {
@@ -59,9 +59,9 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="message_edit", methods={"GET","POST"})
+     * @Route("/message/{id}/update", name="message_update", methods={"GET","POST"})
      */
-    public function edit(Request $request, Message $message): Response
+    public function update(Request $request, Message $message): Response
     {
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
@@ -72,14 +72,14 @@ class MessageController extends AbstractController
             return $this->redirectToRoute('message_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('message/edit.html.twig', [
+        return $this->renderForm('message/update.html.twig', [
             'message' => $message,
             'form' => $form,
         ]);
     }
 
     /**
-     * @Route("/{id}", name="message_delete", methods={"POST"})
+     * @Route("/message/{id}", name="message_delete", methods={"POST"})
      */
     public function delete(Request $request, Message $message): Response
     {
