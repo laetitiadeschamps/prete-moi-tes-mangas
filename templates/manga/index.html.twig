@@ -1,7 +1,9 @@
+
+
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Episode{% endblock %}
 
+{% block title %}Edit Episode{% endblock %}
 {% block body %}
     <h1>Manga index</h1>
 
@@ -31,8 +33,10 @@
                 <td>{{ manga.createdAt ? manga.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>{{ manga.updatedAt ? manga.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
-                    <a href="{{ path('manga_show', {'id': manga.id}) }}">show</a>
-                    <a href="{{ path('manga_update', {'id': manga.id}) }}">edit</a>
+
+                    <a href="{{ path('manga-show', {'id': manga.id}) }}">show</a>
+                    <a href="{{ path('manga-update', {'id': manga.id}) }}">edit</a>
+
                 </td>
             </tr>
         {% else %}
@@ -43,5 +47,7 @@
         </tbody>
     </table>
 
-    <a href="{{ path('manga_add') }}">Create new</a>
+
+    <a href="{{ path('manga-add') }}">Create new</a>
+
 {% endblock %}
