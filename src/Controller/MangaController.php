@@ -11,12 +11,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/manga")
+ * @Route("/manga", name="manga-", requirements={"id"="\d+"})
  */
 class MangaController extends AbstractController
 {
     /**
-     * @Route("/", name="manga_index", methods={"GET"})
+     * @Route("/list", name="index", methods={"GET"})
      */
     public function index(MangaRepository $mangaRepository): Response
     {
@@ -26,7 +26,7 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="manga_new", methods={"GET","POST"})
+     * @Route("/add", name="new", methods={"GET","POST"})
      */
     public function new(Request $request): Response
     {
@@ -49,7 +49,7 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="manga_show", methods={"GET"})
+     * @Route("/{id}", name="show", methods={"GET"})
      */
     public function show(Manga $manga): Response
     {
@@ -59,9 +59,9 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="manga_edit", methods={"GET","POST"})
+     * @Route("/{id}/update", name="manga_update", methods={"GET|POST"})
      */
-    public function edit(Request $request, Manga $manga): Response
+    public function update(Request $request, Manga $manga): Response
     {
         $form = $this->createForm(MangaType::class, $manga);
         $form->handleRequest($request);
@@ -79,7 +79,7 @@ class MangaController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="manga_delete", methods={"POST"})
+     * @Route("/{id}/delete", name="delete", methods={"POST"})
      */
     public function delete(Request $request, Manga $manga): Response
     {
