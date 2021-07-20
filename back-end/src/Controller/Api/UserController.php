@@ -43,48 +43,51 @@ class UserController extends AbstractController
         $this->chatRepository = $chatRepository;
     }
     /**
-     * @Route("/{id}/", name="details", methods={"GET"})
+     * Method to see a user's profile (the logged in user or any other user)
+     * @Route("/{id}", name="details", methods={"GET"})
      */
     public function details(int $id, Security $security): Response
     {
         /** @var User $user */
         $user = $security->getUser();
         $contact = $this->userRepository->find($id);
-        if (!$contact) {
+        // If the id is not on of an existing user, we throw an error
+        if(!$contact) {
             return $this->json(
                 ['error' => 'Cet utilisateur n\'existe pas'],
                 404
             );
         }
+        // We build an array that contains on the one hand the user's infos and on the other hand the chat between the user and the logged in user. Returns null if no chat found
         $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
         $infos['contact'] = $contact;
         $infos['chat'] = $chat;
-        
+       
         return $this->json($infos, 200, [], [
             'groups' => 'users'
         ]);
     }
 
     /**
+     * Method to update the logged in user's profile info
      * @Route("/{id}/update", name="update", methods={"PUT|PATCH"})
      */
     public function update(User $user, Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
-
-        //Decode de JSON input to check if the password has been changed
+        //We decode de JSON input to check if the password has been changed
         $jsonArray = json_decode($request->getContent(), true);
         $needsHash = false;
         if (isset($jsonArray['password'])) {
             $needsHash = true;
         };
         $jsonData = $request->getContent();
-        // editing our user with given updated informations
-        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]);
-        $user->setZipCode(intval($jsonArray['zip_code']));
+        // We edit our user with given updated informations
+        $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+        // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
+        isset($jsonArray['zip_code']) ? $user->setZipCode(intval($jsonArray['zip_code'])):'';
         //We validate the inputs according to our constraints
         $errors = $this->validator->validate($user);
-        //If there are any errors, we send back a list of errors (reformatted for clearer output)
-
+        //If there are any errors, we send back a list of errors (reformatted for clearer output) 
         if (count($errors) > 0) {
             $errorslist = array();
             foreach ($errors as $error) {
@@ -93,8 +96,8 @@ class UserController extends AbstractController
             }
             return $this->json($errorslist, 400);
         }
-        //If a new password has been given, we hash it before sending to DB
-        if ($needsHash) {
+        //If a new password has been given, we hash it before sending to the database
+        if($needsHash) {
             $user->setPassword(
                 $passwordEncoder->hashPassword(
                     $user,
@@ -102,6 +105,7 @@ class UserController extends AbstractController
                 )
             );
         }
+        // According to the updated address and city, we update coordinates
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         $user->setLatitude($coordinates['latitude']);
         $user->setLongitude($coordinates['longitude']);
@@ -110,6 +114,7 @@ class UserController extends AbstractController
     }
 
     /**
+     * Method to create a user
      * @Route("/add", name="add", methods={"POST"})
      */
     public function add(Request $request, UserPasswordHasherInterface $passwordEncoder): Response

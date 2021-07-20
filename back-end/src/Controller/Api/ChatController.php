@@ -121,7 +121,7 @@ class ChatController extends AbstractController
         );
     }
     /**
-     * method to add a message from a user in a chat
+     * Method to add a message from a user in a chat
      * @Route("/chat/{chatId}/message", name="add", methods="POST")
      */
     public function add(Request $request, ValidatorInterface $validator, $id, $chatId)
@@ -176,6 +176,59 @@ class ChatController extends AbstractController
                 201
             );
         }
+    }
+
+    /**
+     * Method to create a conversation with an admin through the contact form
+     * @Route("/contact-admin", name="contactAdmin", methods="POST")
+     */
+    public function contactAdmin(Request $request, ValidatorInterface $validator, $id)
+    {
+
+
+        //$jsonData = $request->toArray();
+        $author = $this->userRepository->find($id);
+        $admins = $this->userRepository->findAdmin();
+        
+        if (!$author || !$admins){
+           
+                return $this->json(
+                    ['error' => 'La ressource demandée n\'existe pas'], 404
+                );
+            
+        }
+       //We want to create a chat and relate it to the user and all admins.
+       
+       $title = $author->getPseudo() . " - ADMIN";
+       $chat = new Chat();
+       $chat->setTitle($title);
+       $chat->addUser($author);
+       foreach($admins as $admin) {
+           
+           $chat->addUser($admin);
+        }
+        
+        $this->em->persist($chat);
+        
+        //We want to create a message with datas from POST request and link it to the chat.
+        $jsonData = $request->getContent();
+
+        //deserialization : Json => Object
+        $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
+
+        $message->setAuthor($author);
+        $message->setChat($chat);
+
+        $this->em->persist($message);
+        $this->em->flush();
+
+
+        return $this->json(
+            [
+                'message' => 'La demande de contact a bien été envoyée'
+            ],
+            201
+        );
     }
 
 
