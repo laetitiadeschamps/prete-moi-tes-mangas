@@ -78,6 +78,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $stmt->getResult();
     }
 
+    public function findAdmin() {
+        $role = 'ROLE_ADMIN';
+        return $this->createQueryBuilder('user')
+        
+        ->where('user.roles LIKE :role')
+        ->setParameter(':role', "%$role%")
+        
+        ->getQuery()
+        ->getResult();
+    }
+
 
     // /**
     //  * @return User[] Returns an array of User objects

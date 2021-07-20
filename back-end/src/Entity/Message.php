@@ -70,7 +70,7 @@ class Message
 
     public function __construct()
     {
-        $this->status = 1;
+        $this->status = 0;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
         

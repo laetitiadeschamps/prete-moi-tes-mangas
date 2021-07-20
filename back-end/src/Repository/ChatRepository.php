@@ -63,6 +63,7 @@ class ChatRepository extends ServiceEntityRepository
             ->setParameter(':contactId', $contactId)
             ->getQuery()
             ->getOneOrNullResult();
+
     }
     // /**
     //  * @return Chat[] Returns an array of Chat objects
