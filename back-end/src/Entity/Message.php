@@ -6,6 +6,7 @@ use App\Repository\MessageRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=MessageRepository::class)
  */
@@ -15,50 +16,61 @@ class Message
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"chats", "one-chat"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank(message="un message ne peut être vide")
+     * @Groups({"chats", "one-chat"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"chats"})
      */
     private $object;
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
+     * @Groups({"chats", "one-chat"})
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"chats", "one-chat"})
      */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime")
+     * 
      */
     private $updated_at;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"chats", "one-chat"})
+     * @Assert\NotBlank
+     * 
      */
     private $author;
 
     /**
      * @ORM\ManyToOne(targetEntity=Chat::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotBlank
+     * 
      */
     private $chat;
 
     public function __construct()
     {
-        $this->status = 1;
+        $this->status = 0;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
         

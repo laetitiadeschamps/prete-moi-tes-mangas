@@ -10,11 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity(fields={"email", "pseudo"}, message="L'email et le pseudo doivent être uniques")
+ * @UniqueEntity("email", message="Ce mail est déjà utilisé")
+ * @UniqueEntity("pseudo", message="Ce pseudo est déjà utilisé")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -22,6 +24,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $id;
 
@@ -31,23 +34,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *     message = "'{{ value }}' n'est pas un email valide."
      * )
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $roles = [];
 
     /**
-     * @var string The hashed password
+     * @var string Thse hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      *  @Assert\Regex(
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
-     *      message="Le mot de passe doit faoire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=&*      -"
+     *      message="Le mot de passe doit faire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=-"
      *  )
+     * @Groups({"users"})
      */
     private $password;
 
@@ -60,6 +66,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
      * )
+     * 
+     * @Groups({"chats", "one-chat", "users", "search"})
     */
     private $pseudo;
 
@@ -70,6 +78,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      max = 50,
      *      maxMessage = "Votre nom doit faire moins de  {{ limit }} caractères."
      * )
+     * @Groups({"users"})
      */
     private $lastname;
 
@@ -80,43 +89,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      max = 50,
      *      maxMessage = "Votre prénom doit faire moins de {{ limit }} caractères."
      * )
+     * @Groups({"users"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"users"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"chats", "one-chat", "users"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $address;
 
     /**
-     * @ORM\Column(type="smallint", options={"unsigned":true})
+     * @ORM\Column(type="integer", options={"unsigned":true})
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
      * )
+     * @Groups({"users"})
      */
     private $zip_code;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users", "search"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"users"})
      */
     private $holiday_mode;
 
@@ -124,18 +140,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="smallint")
      * @Assert\Regex("/^(0|1)$/")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users"})
      */
     private $status;
 
     /**
-     * @ORM\Column(type="integer")
+     *@ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users", "search"})
      */
     private $latitude;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Groups({"users", "search"})
      */
     private $longitude;
 
@@ -149,20 +168,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $updated_at;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Volume::class, inversedBy="users")
-     */
-    private $volumes;
 
     /**
      * @ORM\ManyToMany(targetEntity=Chat::class, inversedBy="users")
+     * 
      */
     private $chats;
 
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author")
+     * 
      */
     private $messages;
+
+    /**
+     * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
+     * @Groups({"users", "search"})
+     */
+    private $volumes;
 
 
     public function __construct()
@@ -171,9 +194,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->holiday_mode = false;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
-        $this->volumes = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->messages = new ArrayCollection();
+        $this->volumes = new ArrayCollection();
     }
     
     public function getId(): ?int
@@ -265,7 +288,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getPseudo(): ?string
+    public function getPseudo(): string
     {
         return $this->pseudo;
     }
@@ -385,24 +408,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLatitude(): ?int
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(int $latitude): self
+    public function setLatitude(float $latitude): self
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    public function getLongitude(): ?int
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(int $longitude): self
+    public function setLongitude(float $longitude): self
     {
         $this->longitude = $longitude;
 
@@ -433,29 +456,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Volume[]
-     */
-    public function getVolumes(): Collection
-    {
-        return $this->volumes;
-    }
-
-    public function addVolume(Volume $volume): self
-    {
-        if (!$this->volumes->contains($volume)) {
-            $this->volumes[] = $volume;
-        }
-
-        return $this;
-    }
-
-    public function removeVolume(Volume $volume): self
-    {
-        $this->volumes->removeElement($volume);
-
-        return $this;
-    }
 
     /**
      * @return Collection|Chat[]
@@ -510,4 +510,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    /**
+     * @return Collection|UserVolume[]
+     */
+    public function getVolumes(): Collection
+    {
+        return $this->volumes;
+    }
+
+    public function addVolume(UserVolume $volume): self
+    {
+        if (!$this->volumes->contains($volume)) {
+            $this->volumes[] = $volume;
+            $volume->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVolume(UserVolume $volume): self
+    {
+        if ($this->volumes->removeElement($volume)) {
+            // set the owning side to null (unless already changed)
+            if ($volume->getUser() === $this) {
+                $volume->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

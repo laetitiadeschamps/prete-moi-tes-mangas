@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -35,6 +36,59 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->persist($user);
         $this->_em->flush();
     }
+
+
+    public function search($latitude, $longitude)
+    {
+        // name of the current table
+        $table = $this->getClassMetadata()->table["name"];
+       
+        //sql query with haversine formula to get all users within 30km of the coordinates points
+        $sql = "SELECT u.* "
+        .",(
+            6371 *
+            acos(cos(radians(:lat)) * 
+            cos(radians(u.latitude)) * 
+            cos(radians(u.longitude) - 
+            radians(:long)) + 
+            sin(radians(:lat)) * 
+            sin(radians(u.latitude)))
+            ) AS distance "
+        ."FROM " . $table . " AS u "
+        ."LEFT JOIN user_volume AS uservolume "
+        ."ON u.id = uservolume.user_id "
+        ."HAVING distance < 30 "
+        ."ORDER BY distance; "
+        ;
+
+        // mapping of the user entity to get object datas
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addEntityResult(User::class, "u");
+
+        foreach ($this->getClassMetadata()->fieldMappings as $obj) {
+            $rsm->addFieldResult("u", $obj["columnName"], $obj["fieldName"]);
+        }
+
+        //native query
+        $stmt = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        $stmt->setParameter(":lat", $latitude);
+        $stmt->setParameter(":long", $longitude);
+        $stmt->execute();
+
+        return $stmt->getResult();
+    }
+
+    public function findAdmin() {
+        $role = 'ROLE_ADMIN';
+        return $this->createQueryBuilder('user')
+        
+        ->where('user.roles LIKE :role')
+        ->setParameter(':role', "%$role%")
+        
+        ->getQuery()
+        ->getResult();
+    }
+
 
     // /**
     //  * @return User[] Returns an array of User objects
