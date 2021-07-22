@@ -3,14 +3,13 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Message;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection as CollectionFilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\ComparisonFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\NullFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 
 class MessageCrudController extends AbstractCrudController
 {
@@ -19,13 +18,19 @@ class MessageCrudController extends AbstractCrudController
         return Message::class;
     }
 
-    public function configureFilters(Filters $filters): Filters
+    /**
+     * method to override creationIndexQueryBuilder to get only ADMIN messages
+     */
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, CollectionFilterCollection $filters): QueryBuilder
     {
-        return $filters
-            
-            ->add(NullFilter::new("object")->setChoiceLabels("tout afficher","n'afficher que les messages ADMIN"));
-          
-        ;
+        
+        $response = $this->get(EntityRepository::class)->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
+        //! by title = ADMIN
+        $response->andWhere('entity.chat = 4');
+        return $response;
     }
+
+    //TODO command creation chat ADMIN (check if it is not already present)
+    
     
 }
