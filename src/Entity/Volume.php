@@ -147,4 +147,8 @@ class Volume
 
         return $this;
     }
+    public function __toString()
+    {
+       return $this->number;
+    }
 }

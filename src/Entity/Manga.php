@@ -50,8 +50,7 @@ class Manga
     private $synopsis;
 
     /**
-     * @ORM\Column(type="integer")
-     * @Assert\NotBlank(message="Ce champ doit être renseigné")
+     * @ORM\Column(type="integer", nullable=true)
      * @Groups({"mangas", "users", "search"})
      */
     private $volume_number;
