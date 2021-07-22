@@ -31,14 +31,16 @@ class VolumeRepository extends ServiceEntityRepository
           foreach($users as $user) {
               $userIds[] = $user->getId();
           }
-          $userIds = implode(", ", $userIds);
-  
-;          
+          $userIds = implode(", ", $userIds);     
           $qb = $this->createQueryBuilder('volume')->join('volume.users', 'users')->addSelect('users')->where('users');
           $query = $qb->getQuery();
          
           return $query->getResult();
       }
+
+
+      
+
   
     
 

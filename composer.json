@@ -20,6 +20,7 @@
         "oro/doctrine-extensions": "^2.0",
         "phpdocumentor/reflection-docblock": "^5.2",
         "sensio/framework-extra-bundle": "^6.1",
+        "stof/doctrine-extensions-bundle": "^1.6",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "5.3.*",
         "symfony/console": "5.3.*",

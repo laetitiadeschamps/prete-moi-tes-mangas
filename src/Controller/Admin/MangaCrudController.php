@@ -14,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\UserMenu;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
@@ -23,6 +24,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class MangaCrudController extends AbstractCrudController
 {
@@ -44,10 +46,9 @@ class MangaCrudController extends AbstractCrudController
               IdField::new('id')->hideOnForm(),
               TextField::new('title', 'Titre'),
               TextField::new('author', 'Auteur'),
-              ImageField::new('picture', 'Image')->hideOnForm(),
+              ImageField::new('picture', 'Image')->hideOnForm()->setCssClass('manga-img'),
               IntegerField::new('volume_number', 'Nombre de tomes')->hideOnForm(),
-              DateField::new('created_at', 'Date de création')->hideOnForm(),
-              DateField::new('updated_at', 'Date de modification')->hideOnForm()
+              DateField::new('created_at', 'Date de création')->hideOnForm()
           ];
       }
       public function configureActions(Actions $actions): Actions
@@ -56,23 +57,28 @@ class MangaCrudController extends AbstractCrudController
         // ...
        
         ->add(Crud::PAGE_INDEX, Action::DETAIL)
-        ->add(Crud::PAGE_EDIT, Action::SAVE_AND_ADD_ANOTHER, function(Action $action){
-            return $action->setLabel('Sauvegarder et continuer à modifier');
-        })
+        ->add(Crud::PAGE_EDIT, Action::SAVE_AND_ADD_ANOTHER)
         ->remove(Crud::PAGE_INDEX, Action::EDIT)
         ->remove(Crud::PAGE_DETAIL, Action::EDIT)
         ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-            return $action->setIcon('fas fa-plus')->setLabel('Ajouter un manga');
+            return $action->setIcon('fas fa-plus')->setLabel('Ajouter un manga')->setCssClass('btn bg-black');
         })
+        ->update(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER, function (Action $action) {
+            return $action->setCssClass('btn btn-success');
+        })
+        ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
+            return $action->setCssClass('btn btn-success');
+        })
+
         
         ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-            return $action->setIcon('fas fa-trash')->setLabel(false);
+            return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
         })
         ->update(Crud::PAGE_DETAIL, Action::DELETE, function (Action $action) {
-            return $action->setIcon('fas fa-trash')->setLabel('Supprimer');
+            return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
         })
         ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
-            return $action->setIcon('fas fa-eye')->setLabel(false);
+            return $action->setIcon('fas fa-eye')->setLabel(false)->setCssClass('text-dark');
         })
        
     ;
@@ -84,7 +90,7 @@ class MangaCrudController extends AbstractCrudController
         ->setPageTitle('new', 'Ajouter un manga')
         ->setPageTitle('index', 'Mes mangas')
         ->setSearchFields(['title', 'author'])
-
+     
      ;
  }
  public function configureFilters(Filters $filters): Filters
@@ -116,4 +122,5 @@ class MangaCrudController extends AbstractCrudController
         $this->volumesCreation->createAll($manga->getId());
         
     }
+    
 }
