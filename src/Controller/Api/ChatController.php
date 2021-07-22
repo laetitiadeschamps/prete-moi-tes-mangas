@@ -70,6 +70,7 @@ class ChatController extends AbstractController
      */
     public function details(int $id, $chatId)
     {
+        //TODO mark as read
         $user = $this->userRepository->find($id);
         if(!$user){
             return $this->json(
