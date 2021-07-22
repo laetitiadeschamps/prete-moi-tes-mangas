@@ -179,7 +179,7 @@ class ChatController extends AbstractController
         }
     }
 
-    /**
+        /**
      * Method to create a conversation with an admin through the contact form
      * @Route("/contact-admin", name="contactAdmin", methods="POST")
      */
@@ -200,7 +200,7 @@ class ChatController extends AbstractController
         }
        //We want to create a chat and relate it to the user and all admins.
        
-       
+       //TODO if null en créer une
         $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
                
         //We want to create a message with datas from POST request and link it to the chat.
