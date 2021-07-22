@@ -70,6 +70,7 @@ class ChatController extends AbstractController
      */
     public function details(int $id, $chatId)
     {
+        //TODO mark as read
         $user = $this->userRepository->find($id);
         if(!$user){
             return $this->json(
@@ -199,17 +200,9 @@ class ChatController extends AbstractController
         }
        //We want to create a chat and relate it to the user and all admins.
        
-       $title = $author->getPseudo() . " - ADMIN";
-       $chat = new Chat();
-       $chat->setTitle($title);
-       $chat->addUser($author);
-       foreach($admins as $admin) {
-           
-           $chat->addUser($admin);
-        }
-        
-        $this->em->persist($chat);
-        
+       
+        $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
+               
         //We want to create a message with datas from POST request and link it to the chat.
         $jsonData = $request->getContent();
 
@@ -217,7 +210,7 @@ class ChatController extends AbstractController
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
 
         $message->setAuthor($author);
-        $message->setChat($chat);
+        $message->setChat($chatAdmin);
 
         $this->em->persist($message);
         $this->em->flush();
