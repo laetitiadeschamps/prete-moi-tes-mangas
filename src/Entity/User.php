@@ -190,7 +190,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->status = 1;
+        $this->status = false;
         $this->holiday_mode = false;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
@@ -541,5 +541,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
+    public function __toString()
+    {
+        return $this->pseudo;
+    }
 }
