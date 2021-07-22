@@ -7,11 +7,16 @@ use App\Repository\MangaRepository;
 use App\Service\JikanApi;
 use App\Service\VolumesCreation;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
@@ -31,7 +36,7 @@ class MangaCrudController extends AbstractCrudController
     }
 
     
-    // TODO appeler service + api à la création de manga + afficher img et non lien en dur
+    
     
       public function configureFields(string $pageName): iterable
       {
@@ -42,7 +47,7 @@ class MangaCrudController extends AbstractCrudController
               ImageField::new('picture', 'Image')->hideOnForm(),
               IntegerField::new('volume_number', 'Nombre de tomes')->hideOnForm(),
               DateField::new('created_at', 'Date de création')->hideOnForm(),
-              DateField::new('updated_at', 'date de modification')->hideOnForm()
+              DateField::new('updated_at', 'Date de modification')->hideOnForm()
           ];
       }
       public function configureActions(Actions $actions): Actions
@@ -77,8 +82,8 @@ class MangaCrudController extends AbstractCrudController
  {
      return $crud
         ->setPageTitle('new', 'Ajouter un manga')
-         ->setDateFormat('short')
-         ->setSearchFields(['title', 'author'])
+        ->setPageTitle('index', 'Mes mangas')
+        ->setSearchFields(['title', 'author'])
 
      ;
  }

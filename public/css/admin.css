@@ -3,6 +3,9 @@
     background:url('../images/logo.png') no-repeat;
     background-size:100%;
     display: inline-block;
-    width:20px;
-    height:20px;
+    width:30px;
+    height:30px;
+}
+.main-header #header-logo a {
+    color:#d54028;
 }
