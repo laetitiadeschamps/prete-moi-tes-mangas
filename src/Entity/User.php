@@ -49,7 +49,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string Thse hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
-     *  @Assert\Regex(
+     * @Assert\Regex(
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
      *      message="Le mot de passe doit faire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=-"
      *  )
@@ -190,7 +190,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->status = 1;
+        $this->status = false;
         $this->holiday_mode = false;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
@@ -223,7 +223,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) $this->pseudo;
     }
 
     /**
@@ -231,7 +231,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->email;
+        return (string) $this->pseudo;
     }
 
     /**
@@ -541,5 +541,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
+    public function __toString()
+    {
+        return $this->pseudo;
+    }
 }

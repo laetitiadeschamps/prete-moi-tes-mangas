@@ -34,7 +34,7 @@ class Message
     private $object;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
+     * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"chats", "one-chat"})
      */
     private $status;
@@ -164,4 +164,10 @@ class Message
 
         return $this;
     }
+
+    public function setArchive()
+    {
+        return;
+    }
+    
 }

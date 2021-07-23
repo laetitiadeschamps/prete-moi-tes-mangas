@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ChatRepository;
+use App\Repository\MessageRepository;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -48,8 +49,10 @@ class Chat
     /**
      * @ORM\OneToMany(targetEntity=Message::class, mappedBy="chat", orphanRemoval=true)
      * @Groups({"one-chat"})
+     * 
      */
     private $messages;
+    
 
     public function __construct()
     {
@@ -57,6 +60,7 @@ class Chat
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
         $this->messages = new ArrayCollection();
+        
     }
 
     public function getId(): ?int
@@ -155,5 +159,10 @@ class Chat
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->title;
     }
 }
