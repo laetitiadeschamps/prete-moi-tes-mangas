@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Message;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection as CollectionFilterCollection;
@@ -63,10 +64,10 @@ class MessageCrudController extends AbstractCrudController
         ->setSearchFields(['object', 'author', 'content']);
     }
 
-    public function configureActions(Actions $actions): Actions
-    {
 
-        
+   
+    public function configureActions(Actions $actions): Actions
+    {    
         $archive = Action::new('Archiver')->setIcon('fas fa-trash')->setLabel(false)->linkToCrudAction('setArchive')
         ->displayIf(static function ($entity) {
             return $entity->getStatus();
@@ -74,9 +75,7 @@ class MessageCrudController extends AbstractCrudController
         return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
          
         ->add(Crud::PAGE_INDEX, $archive)
-        ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
-            return $action->setIcon('fas fa-reply')->setLabel(false);
-        })
+        
         ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
             return $action->setIcon('fas fa-plus')->setLabel('Ajouter un manga')->setCssClass('btn bg-black');
         });
