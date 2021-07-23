@@ -50,6 +50,7 @@ class ChatController extends AbstractController
             );
         } 
         // fetching all chats from one user
+        /** @var array $chats */
         $chats = $this->chatRepository->findAllByUser($id);
         
         //fetching the last message of each conversation
