@@ -21,6 +21,7 @@ class Message
     private $id;
 
     /**
+
      * @ORM\Column(type="text")
      * @Assert\NotBlank(message="un message ne peut être vide")
      * @Groups({"chats", "one-chat"})

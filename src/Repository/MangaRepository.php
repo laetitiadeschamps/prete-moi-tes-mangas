@@ -24,19 +24,16 @@ class MangaRepository extends ServiceEntityRepository
     // /**
     //  * @return Manga[] Returns an array of Manga objects
     //  */
-    /*
-    public function findByExampleField($value)
+    
+    public function getCount()
     {
-        return $this->createQueryBuilder('m')
-            ->andWhere('m.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('m.id', 'ASC')
-            ->setMaxResults(10)
+        return $this->createQueryBuilder('manga')
+            ->select('count(manga.id) as count')
             ->getQuery()
-            ->getResult()
+            ->getSingleResult()
         ;
     }
-    */
+    
 
     /*
     public function findOneBySomeField($value): ?Manga

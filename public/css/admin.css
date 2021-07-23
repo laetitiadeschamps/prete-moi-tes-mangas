@@ -1,3 +1,21 @@
+/* Général */
+body {
+    position: relative;
+    min-height: 100vh;
+}
+body::before {
+    content:'';
+    position: absolute;
+    top:-100px;
+    bottom: 0;
+    left:0;
+    right:0;
+    z-index: -1;
+    background-image: url('../images/bg.png');
+    background-size: cover;
+    background-attachment: fixed;
+    opacity: 0.3;
+}
 .logo::before {
     content: '';
     background:url('../images/logo.png') no-repeat;
@@ -6,6 +24,57 @@
     width:30px;
     height:30px;
 }
+.logout::before {
+    content: '';
+    background:url('../images/logout.png') no-repeat;
+    background-size:100%;
+    display: inline-block;
+    width:30px;
+    height:30px;
+}
+.user-action.logout  {
+   display: flex;
+   align-items: center;
+   height:3em;
+}
+.main-sidebar, .content-header:after, .content-header:before, .content-header {
+    background: none;
+}
+.navbar-custom-menu .user {
+    color:black;
+}
+#main-menu .menu a, #main-menu .menu .menu-icon {
+    color: black;
+}
 .main-header #header-logo a {
     color:#d54028;
 }
+#main-menu .menu .menu-item.active:not(.expanded) a, #main-menu .menu .menu-item.active:not(.expanded) .menu-icon {
+    color:#d54028;
+}
+.user-menu-wrapper {
+    font-size: 1.5em;
+}
+.navbar-custom-menu .user-avatar{
+    font-size: 1.5em;
+    max-width: none;
+    max-height: none;
+}
+/* Fix btn-dark class not working */
+.bg-black {
+    color: white;
+    background-color: black;
+}
+/* Dashboard */
+.text-gray {
+    color:gray;
+}
+/* Mangas */
+.datagrid .manga-img img {
+    width:100px;
+    height:100px;
+    max-height: none;
+    border-radius: 15px;
+}
+
+
