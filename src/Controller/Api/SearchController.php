@@ -30,7 +30,11 @@ class SearchController extends AbstractController
     {
         $coordinates = $localisator->gpsByZipcode($zipcode);
         extract($coordinates);
-        
+        //if an error in Localisator is returned :
+        if (isset($error)){
+            return $this->json($coordinates['error'], 400);
+        }
+
         $users = $userRepository->search($latitude, $longitude);
         
         $arrayResult=[];

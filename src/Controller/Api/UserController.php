@@ -107,8 +107,14 @@ class UserController extends AbstractController
         }
         // According to the updated address and city, we update coordinates
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
+        extract($coordinates);
+        //if an error in Localisator is returned :
+        if (isset($error)) {
+            return $this->json($error, 400);
+        }
+
+        $user->setLatitude($latitude);
+        $user->setLongitude($longitude);
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200);
     }
@@ -125,8 +131,15 @@ class UserController extends AbstractController
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
+
+        extract($coordinates);
+        //if an error in Localisator is returned :
+        if (isset($error)) {
+            return $this->json($error, 400);
+        }
+
+        $user->setLatitude($latitude);
+        $user->setLongitude($longitude);
         $user->setRoles(['ROLE_USER']);
 
         //We validate the inputs according to our constraints
