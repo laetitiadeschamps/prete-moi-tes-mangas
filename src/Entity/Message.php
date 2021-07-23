@@ -21,7 +21,21 @@ class Message
     private $id;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
+
+     * @ORM\Column(type="text")
+     * @Assert\NotBlank(message="un message ne peut être vide")
+     * @Groups({"chats", "one-chat"})
+     */
+    private $content;
+
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     * @Groups({"chats"})
+     */
+    private $object;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"chats", "one-chat"})
      */
     private $status;
@@ -152,5 +166,9 @@ class Message
         return $this;
     }
 
+    public function setArchive()
+    {
+        return;
+    }
     
 }
