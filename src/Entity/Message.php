@@ -165,5 +165,9 @@ class Message
         return $this;
     }
 
+    public function setArchive()
+    {
+        return;
+    }
     
 }

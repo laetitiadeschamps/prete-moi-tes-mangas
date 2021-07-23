@@ -6,18 +6,17 @@ use App\Entity\Message;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection as CollectionFilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
-use Symfony\Component\Validator\Constraints\Choice;
 
 class MessageCrudController extends AbstractCrudController
 {
@@ -62,5 +61,21 @@ class MessageCrudController extends AbstractCrudController
         ->setPageTitle('index', 'Messagerie')
         ->setSearchFields(['object', 'author', 'content']);
     }
+
+    public function configureActions(Actions $actions): Actions
+    {
+
+        
+        $archive = Action::new('Archiver')->setIcon('fas fa-trash')->setLabel(false)->linkToCrudAction('setArchive')
+        ->displayIf(static function ($entity) {
+            return $entity->getStatus();
+        });
+        return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
+         
+        ->add(Crud::PAGE_INDEX, $archive);
+    }
     
+    public function setArchive(string $entityFqcn){
+        
+    }
 }
