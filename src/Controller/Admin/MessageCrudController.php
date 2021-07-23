@@ -32,6 +32,7 @@ class MessageCrudController extends AbstractCrudController
     {
         
         $response = $this->get(EntityRepository::class)->createQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
         
         $response->innerJoin('entity.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ADMIN')->addSelect('c');
         
@@ -73,7 +74,11 @@ class MessageCrudController extends AbstractCrudController
         return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
          
         ->add(Crud::PAGE_INDEX, $archive);
+
     }
+
+    //TODO command creation chat ADMIN (check if it is not already present)
+    
     
     public function setArchive(string $entityFqcn){
         
