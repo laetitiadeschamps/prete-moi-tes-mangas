@@ -42,7 +42,6 @@ class MessageCrudController extends AbstractCrudController
 
 
         $response->innerJoin('entity.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ADMIN')->addSelect('c');
-
         return $response;
     }
 
