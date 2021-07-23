@@ -47,11 +47,6 @@ class MessageCrudController extends AbstractCrudController
     }
 
 
-    //TODO command creation chat ADMIN (check if it is not already present)
-    //TODO archiver au lieu de supprimer
-    //TODO et répondre au lieu d'éditer
-
-
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -73,23 +68,31 @@ class MessageCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
 
-
+        //Action when status is true (="traité")
         $archive = Action::new('Archiver')->setIcon('fas fa-trash')->setLabel(false)->linkToCrudAction('archive')
             ->displayIf(static function ($entity) {
                 return $entity->getStatus();
             });
+        
+        
+        $answer = Action::new('Répondre')->setIcon('fas fa-reply')->setLabel(false)->linkToCrudAction('answer')
+        ->displayIf(static function ($entity) {
+            
+            return !$entity->getStatus();
+
+        });
         return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
-
-            ->add(Crud::PAGE_INDEX, $archive);
+                ->add(Crud::PAGE_INDEX, $archive)
+                ->add(Crud::PAGE_INDEX, $answer)
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ;
     }
-
-    //TODO command creation chat ADMIN (check if it is not already present)
 
 
     public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository) :Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
-        
+
         $url = $adminUrlGenerator
         ->setController(MessageCrudController::class)
         ->setAction('index')
@@ -111,8 +114,5 @@ class MessageCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    // public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
-    // {
-        
-    // }
+
 }
