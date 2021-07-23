@@ -187,7 +187,6 @@ class ChatController extends AbstractController
     {
 
 
-        //$jsonData = $request->toArray();
         $author = $this->userRepository->find($id);
         $admins = $this->userRepository->findAdmin();
         
@@ -200,9 +199,21 @@ class ChatController extends AbstractController
         }
        //We want to create a chat and relate it to the user and all admins.
        
-       //TODO if null en créer une
+
+       
+        $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
+
+        //creation a Chat ADMIN if not existent
+        if (!$chatAdmin){
+            $chatAdmin = new Chat();
+            $chatAdmin->setTitle("ADMIN");
+            $this->em->persist($chatAdmin);
+            $this->em->flush();
+        }   
+
         $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
                
+
         //We want to create a message with datas from POST request and link it to the chat.
         $jsonData = $request->getContent();
 

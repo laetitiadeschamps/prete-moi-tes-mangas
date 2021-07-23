@@ -23,12 +23,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
+
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class MangaCrudController extends AbstractCrudController
 {
+
     private $jikanApi; 
+
     private $mangaRepository;
     private $volumesCreation;
 
@@ -36,6 +39,7 @@ class MangaCrudController extends AbstractCrudController
     {
         return Manga::class;
     }
+
 
     
     
@@ -122,5 +126,4 @@ class MangaCrudController extends AbstractCrudController
         $this->volumesCreation->createAll($manga->getId());
         
     }
-    
 }
