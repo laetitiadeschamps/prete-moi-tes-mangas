@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\User;
+use App\Service\Localisator;
 use Doctrine\DBAL\Types\BooleanType;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -25,15 +26,17 @@ class UserCrudController extends AbstractCrudController
 {
     private $passwordEncoder;
     private $adminUrlGenerator;
+    private $localisator;
 
     public static function getEntityFqcn(): string
     {
         return User::class;
     }
-    public function __construct( UserPasswordHasherInterface $passwordEncoder, AdminUrlGenerator $adminUrlGenerator)
+    public function __construct( UserPasswordHasherInterface $passwordEncoder, AdminUrlGenerator $adminUrlGenerator, Localisator $localisator)
     {
         $this->passwordEncoder =$passwordEncoder;
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->localisator = $localisator;
     }
 
    
