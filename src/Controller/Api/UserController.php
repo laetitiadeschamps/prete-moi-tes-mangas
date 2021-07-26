@@ -127,7 +127,12 @@ class UserController extends AbstractController
     {
 
         $JsonData = $request->getContent();
-        $user = $this->serializer->deserialize($JsonData, User::class, 'json');
+        $user = new User();
+
+        $this->serializer->deserialize($JsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+        // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
+        $jsonArray = json_decode($request->getContent(), true);
+       $user->setZipCode(intval($jsonArray['zip_code']));
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());

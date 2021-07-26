@@ -8,6 +8,7 @@ use App\Entity\Manga;
 use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\MangaRepository;
+use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Repository\UserVolumeRepository;
 use App\Repository\VolumeRepository;
@@ -26,12 +27,15 @@ class DashboardController extends AbstractDashboardController
     private $mangaRepository;
     private $userVolumeRepository;
     private $userRepository;
+    private $messageRepository;
+    
 
-    public function __construct(MangaRepository $mangaRepository, UserVolumeRepository $userVolumeRepository, UserRepository $userRepository)
+    public function __construct(MangaRepository $mangaRepository, UserVolumeRepository $userVolumeRepository, UserRepository $userRepository, MessageRepository $messageRepository)
     {
         $this->mangaRepository = $mangaRepository;
         $this->userVolumeRepository = $userVolumeRepository; 
-        $this->userRepository = $userRepository;  
+        $this->userRepository = $userRepository;
+        $this->messageRepository = $messageRepository;
     }
     /**
      * @Route("/", name="admin")
@@ -43,10 +47,16 @@ class DashboardController extends AbstractDashboardController
         $mangas = $this->mangaRepository->getCount()['count']; 
         $cities = $this->userRepository->getCityCount()['count'];
         $volumes = $this->userVolumeRepository->getAvailableCount()['count'];
+        $users = $this->userRepository->getActiveCount()['count'];
+        $unreadMessages = $this->messageRepository->getUnreadCount()['count'];
+        $archivedMessages = $this->messageRepository->getArchiveCount()['count'];
         return $this->render('admin/dashboard.html.twig', [
             'mangas'=>$mangas,
             'cities'=>$cities,
-            'volumes'=>$volumes
+            'volumes'=>$volumes,
+            'users'=>$users,
+            'unreadMessages'=>$unreadMessages,
+            'archivedMessages'=>$archivedMessages,
         ]);
     }
     

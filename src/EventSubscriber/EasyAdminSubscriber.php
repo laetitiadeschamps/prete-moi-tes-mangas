@@ -2,63 +2,48 @@
 
 namespace App\EventSubscriber;
 
+use App\Controller\Admin\MessageCrudController;
+use App\Entity\Message;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 
 class EasyAdminSubscriber implements EventSubscriberInterface
 {
 
     private $entityManager;
-    private $passwordEncoder;
+    
 
-    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->passwordEncoder = $passwordEncoder;
+        
+     
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            BeforeEntityPersistedEvent::class => ['addUser'],
+            BeforeCrudActionEvent::class => ['getUser'],
             
         ];
     }
 
-    public function addUser(BeforeEntityPersistedEvent $event)
-    {
-        $user = $event->getEntityInstance();
-
-        if (!($user instanceof User)) {
-            return;
-        }
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
-    
-        $this->setPassword($user);
-    }
+   
 
     /**
      * @param User $entity
      */
-    public function setPassword(User $entity): void
+    public function getUser(BeforeCrudActionEvent $event): void
     {
-        $pass = $entity->getPassword();
-
-        $entity->setPassword(
-            $this->passwordEncoder->hashPassword(
-                $entity,
-                $pass
-            )
-        );
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+        $entity = $event->getAdminContext();
+        dd($entity);
+  
     }
 
 }
