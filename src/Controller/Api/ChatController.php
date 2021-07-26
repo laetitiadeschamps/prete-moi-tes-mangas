@@ -28,17 +28,17 @@ class ChatController extends AbstractController
     protected $messageRepository;
     protected $em;
     protected $serializer;
-    private $mailer;
+    //private $mailer;
 
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
         $this->messageRepository = $messageRepository;
         $this->em = $em;
         $this->serializer = $serializer;
-        $this->mailer = $mailer;
+        //$this->mailer = $mailer;
     }
 
     /**
@@ -177,11 +177,18 @@ class ChatController extends AbstractController
             $this->em->flush();
 
             // We find the recipient of the message to email him
+            /** @var Array $members */
+            $members = $chat->getUsers(); 
+           
+            foreach($members as $member) {
+                if($member->getId() !== $author->getId()) {
+                   $recipient = $member;
+                }
+            }
 
-           $members = $chat->getUsers(); 
-
-            $email = (new Email())
-            ->to($recipient);
+            dd($recipient);
+            // $email = (new Email())
+            // ->to($recipient);
 
             
             return $this->json(
