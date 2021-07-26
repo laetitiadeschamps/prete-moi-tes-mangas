@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -26,15 +28,17 @@ class ChatController extends AbstractController
     protected $messageRepository;
     protected $em;
     protected $serializer;
+    private $mailer;
 
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository)
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
     {
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
         $this->messageRepository = $messageRepository;
         $this->em = $em;
         $this->serializer = $serializer;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -168,8 +172,17 @@ class ChatController extends AbstractController
             );
         } else {
 
+
             $this->em->persist($message);
             $this->em->flush();
+
+            // We find the recipient of the message to email him
+
+           $members = $chat->getUsers(); 
+
+            $email = (new Email())
+            ->to($recipient);
+
             
             return $this->json(
                 [
