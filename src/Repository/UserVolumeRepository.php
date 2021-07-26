@@ -25,8 +25,7 @@ class UserVolumeRepository extends ServiceEntityRepository
               ->select('count(volume.id) as count')
               ->where('volume.status = 1')
               ->getQuery()
-              ->getSingleResult()
-          ;
+              ->getSingleResult();
       }
     // /**
     //  * @return UserVolume[] Returns an array of UserVolume objects
