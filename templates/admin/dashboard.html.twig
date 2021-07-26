@@ -1,38 +1,57 @@
 {% extends '@!EasyAdmin/page/content.html.twig' %}
 
-{% block  page_title %} Mon interface d'administration {% endblock %}
+{% block  page_title %}
+	Mon interface d'administration
+{% endblock %}
 
 {% block page_content %}
- 
-    <h6 class="my-2">Les mangas</h6>
-    <div class="d-flex justify-content-around my-3 ">
-        <div class="card p-2 text-center w-25 ">
-            <h5 class="card-title text-gray">Nombre de mangas</h5>
-            <div class="card-body fs-1">
-               {{ mangas }}
-            </div>
-        </div>
-        <div class="card p-2 text-center w-25">
-            <h5 class="card-title text-gray">Tomes disponibles</h5>
-            <div class="card-body fs-1">
-               {{ volumes }}
-            </div>
-        </div>
-    </div>
-     <h6 class="my-2">Les utilisateurs</h6>
-    <div class="d-flex justify-content-around my-3 ">
-        <div class="card p-2 text-center w-25 ">
-            <h5 class="card-title text-gray">Nombre d'utilisateurs</h5>
-            <div class="card-body fs-1">
-               {{ users }}
-            </div>
-        </div>
-         <div class="card p-2 text-center w-25">
-            <h5 class="card-title text-gray">Villes</h5>
-            <div class="card-body fs-1">
-                {{ cities }}
-            </div>
-        </div>
-      
-    </div>
+
+	<h6 class="my-2">Les mangas</h6>
+	<div class="d-flex justify-content-around my-3 ">
+		<div class="card p-2 text-center w-25 ">
+			<h5 class="card-title text-gray">Nombre de mangas</h5>
+			<div class="card-body fs-1">
+				{{ mangas }}
+			</div>
+		</div>
+		<div class="card p-2 text-center w-25">
+			<h5 class="card-title text-gray">Tomes disponibles</h5>
+			<div class="card-body fs-1">
+				{{ volumes }}
+			</div>
+		</div>
+	</div>
+    
+	<h6 class="my-2">Messagerie</h6>
+	<div class="d-flex justify-content-around my-3 ">
+		<div class="card p-2 text-center w-25 ">
+			<h5 class="card-title text-gray">Nombre de messages à traiter</h5>
+			<div class="card-body fs-1">
+				{{ unreadMessages }}
+			</div>
+		</div>
+		<div class="card p-2 text-center w-25">
+			<h5 class="card-title text-gray">Nombre de messages archivés</h5>
+			<div class="card-body fs-1">
+				{{ archivedMessages }}
+			</div>
+		</div>
+
+	</div>
+	<h6 class="my-2">Les utilisateurs</h6>
+	<div class="d-flex justify-content-around my-3 ">
+		<div class="card p-2 text-center w-25 ">
+			<h5 class="card-title text-gray">Nombre d'utilisateurs</h5>
+			<div class="card-body fs-1">
+				{{ users }}
+			</div>
+		</div>
+		<div class="card p-2 text-center w-25">
+			<h5 class="card-title text-gray">Villes</h5>
+			<div class="card-body fs-1">
+				{{ cities }}
+			</div>
+		</div>
+</div>
+	
 {% endblock %}

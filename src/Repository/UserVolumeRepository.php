@@ -20,14 +20,13 @@ class UserVolumeRepository extends ServiceEntityRepository
     }
 
     public function getAvailableCount()
-      {
-          return $this->createQueryBuilder('volume')
-              ->select('count(volume.id) as count')
-              ->where('volume.status = 1')
-              ->getQuery()
-              ->getSingleResult()
-          ;
-      }
+    {
+        return $this->createQueryBuilder('volume')
+            ->select('count(volume.id) as count')
+            ->where('volume.status = 1')
+            ->getQuery()
+            ->getSingleResult();
+    }
     // /**
     //  * @return UserVolume[] Returns an array of UserVolume objects
     //  */
