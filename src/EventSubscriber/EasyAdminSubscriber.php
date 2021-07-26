@@ -2,47 +2,38 @@
 
 namespace App\EventSubscriber;
 
+use App\Controller\Admin\MessageCrudController;
+use App\Entity\Message;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
-use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 
 class EasyAdminSubscriber implements EventSubscriberInterface
 {
 
     private $entityManager;
-    private $passwordEncoder;
+    
 
-    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->passwordEncoder = $passwordEncoder;
+        
+     
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            BeforeEntityPersistedEvent::class => ['addUser'],
+            AfterEntityUpdatedEvent::class => ['toggleArchiveButton'],
             
         ];
     }
 
-    public function addUser(BeforeEntityPersistedEvent $event)
-    {
-        $user = $event->getEntityInstance();
-
-        if (!($user instanceof User)) {
-            return;
-        }
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
-    
-        $this->setPassword($user);
-    }
+   
 
     /**
      * @param User $entity
