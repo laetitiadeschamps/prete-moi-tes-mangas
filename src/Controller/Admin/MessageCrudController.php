@@ -33,11 +33,12 @@ class MessageCrudController extends AbstractCrudController
 {
 
     private $adminUrlGenerator;
-
+    
 
     public function __construct(AdminUrlGenerator $adminUrlGenerator)
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
+        
     }
 
     public static function getEntityFqcn(): string
@@ -74,12 +75,18 @@ class MessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Messagerie')
-
+            
             ->setSearchFields(['object', 'author', 'content']);
     }
 
     public function configureActions(Actions $actions): Actions
     {
+        
+
+        $markAsNotTreated = Action::new("marquer comme non-traité")->linkToCrudAction('markAsNotTreated')->setIcon("fas fa-backward")->setLabel("Annuler")->setCssClass('text-dark')->displayIf(static function ($entity) {
+            //if status is true, message is readen
+            return $entity->getStatus();
+        });
 
 
         $markAsNotTreated = Action::new("marquer comme non-traité")->linkToCrudAction('markAsNotTreated')->setIcon("fas fa-backward")->setLabel("Annuler")->setCssClass('text-dark')->displayIf(static function ($entity) {
@@ -92,8 +99,14 @@ class MessageCrudController extends AbstractCrudController
             ->displayIf(static function ($entity) {
                 //if status is true, message is read and can ben archived
                 return $entity->getStatus();
-            });
-
+        });
+        
+        
+        $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction('answer')->setCssClass("text-primary")
+        ->displayIf(static function ($entity) {
+            //if status is false, message is unread
+            return !$entity->getStatus();
+        });
 
         $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction(Crud::PAGE_NEW)->setCssClass("text-primary")
             ->displayIf(static function ($entity) {
@@ -104,19 +117,24 @@ class MessageCrudController extends AbstractCrudController
             //if status is false, message is unread
             return !$entity->getStatus();
         });
+        $markAsTreated = Action::new("Marquer comme traité")->linkToCrudAction('markAsTreated')->setIcon("fas fa-clipboard-check")->setLabel("Traité?")->setCssClass('text-success')->displayIf(static function ($entity) {
+            //if status is false, message is unread
+            return !$entity->getStatus();
+        });
 
         return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
-            ->add(Crud::PAGE_INDEX, $archive)
-            ->add(Crud::PAGE_INDEX, $answer)
-            ->add(Crud::PAGE_INDEX, $markAsTreated)
-            ->add(Crud::PAGE_INDEX, $markAsNotTreated)
-            ->remove(Crud::PAGE_INDEX, Action::EDIT)
-            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
-            });
+                ->add(Crud::PAGE_INDEX, $archive)
+                ->add(Crud::PAGE_INDEX, $answer)
+                ->add(Crud::PAGE_INDEX, $markAsTreated)
+                ->add(Crud::PAGE_INDEX, $markAsNotTreated)
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                    return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');});
+              
+    
     }
 
-    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository): Response
+    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository) :Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
@@ -141,14 +159,14 @@ class MessageCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function markAsTreated(EntityManagerInterface $em, AdminContext $context): Response
+    public function markAsTreated(EntityManagerInterface $em, AdminContext $context) :Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
         $url = $adminUrlGenerator
-            ->setController(MessageCrudController::class)
-            ->setAction('index')
-            ->generateUrl();
+        ->setController(MessageCrudController::class)
+        ->setAction('index')
+        ->generateUrl();
 
         $message = $context->getEntity()->getInstance();
         $message->setStatus(true);
@@ -158,14 +176,14 @@ class MessageCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function markAsNotTreated(EntityManagerInterface $em, AdminContext $context): Response
+    public function markAsNotTreated(EntityManagerInterface $em, AdminContext $context) :Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
         $url = $adminUrlGenerator
-            ->setController(MessageCrudController::class)
-            ->setAction('index')
-            ->generateUrl();
+        ->setController(MessageCrudController::class)
+        ->setAction('index')
+        ->generateUrl();
 
         $message = $context->getEntity()->getInstance();
         $message->setStatus(false);
@@ -192,4 +210,5 @@ class MessageCrudController extends AbstractCrudController
             ->generateUrl();
         return $this->redirect($url);
     }
+
 }
