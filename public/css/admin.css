@@ -77,4 +77,11 @@ body::before {
     border-radius: 15px;
 }
 
-
+/* messagerie */
+.datagrid td.actions .action-icon{
+    font-size: 18px;
+    padding-top:10px;
+}
+.badge-boolean-true {
+    background: var(--color-success)!important;
+}
