@@ -43,10 +43,12 @@ class DashboardController extends AbstractDashboardController
         $mangas = $this->mangaRepository->getCount()['count']; 
         $cities = $this->userRepository->getCityCount()['count'];
         $volumes = $this->userVolumeRepository->getAvailableCount()['count'];
+        $users = $this->userRepository->getActiveCount()['count'];
         return $this->render('admin/dashboard.html.twig', [
             'mangas'=>$mangas,
             'cities'=>$cities,
-            'volumes'=>$volumes
+            'volumes'=>$volumes,
+            'users'=>$users
         ]);
     }
     

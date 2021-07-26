@@ -118,4 +118,8 @@ class UserVolume
 
         return $this;
     }
+   public function __toString()
+   {
+       return 'tome ' . strval( $this->volume->getNumber()) . ' - ' . $this->volume->getManga()->getTitle();
+   }
 }

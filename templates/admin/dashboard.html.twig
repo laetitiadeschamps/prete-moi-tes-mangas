@@ -13,16 +13,26 @@
             </div>
         </div>
         <div class="card p-2 text-center w-25">
-            <h5 class="card-title text-gray">Villes</h5>
-            <div class="card-body fs-1">
-                {{ cities }}
-            </div>
-        </div>
-        <div class="card p-2 text-center w-25">
             <h5 class="card-title text-gray">Tomes disponibles</h5>
             <div class="card-body fs-1">
                {{ volumes }}
             </div>
         </div>
+    </div>
+     <h6 class="my-2">Les utilisateurs</h6>
+    <div class="d-flex justify-content-around my-3 ">
+        <div class="card p-2 text-center w-25 ">
+            <h5 class="card-title text-gray">Nombre d'utilisateurs</h5>
+            <div class="card-body fs-1">
+               {{ users }}
+            </div>
+        </div>
+         <div class="card p-2 text-center w-25">
+            <h5 class="card-title text-gray">Villes</h5>
+            <div class="card-body fs-1">
+                {{ cities }}
+            </div>
+        </div>
+      
     </div>
 {% endblock %}
