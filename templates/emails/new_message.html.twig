@@ -1,0 +1,19 @@
+{% extends 'base_email.html.twig' %}
+	{% block body %}
+
+<h2 class="p-3">Bonjour {{ user.pseudo }}!</h2>
+
+
+
+<p>
+    Vous avez reçu un nouveau message de la part de {{ author.pseudo }}:
+    <p class="border p-3 rounded">
+        {{ message.content }}
+    </p>
+
+    <p>
+        Rendez-vous <a href="{{path('api_chat_add', {id: user.id , chatId: message.chat.id })}}" class="text-decoration-none text-info">ici</a> pour voir la conversation
+    </p>
+</p>
+{% endblock %}
+
