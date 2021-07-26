@@ -26,6 +26,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class MessageCrudController extends AbstractCrudController
 {
@@ -61,10 +63,10 @@ class MessageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('object', 'Objet'),
-            TextField::new('author', 'Auteur'),
+            TextField::new('object', 'Objet')->hideOnForm(),
+            TextField::new('author', 'Auteur')->hideOnForm(),
             TextareaField::new('content', 'Message'),
-            BooleanField::new('status', 'Traité')->renderAsSwitch(false),
+            BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
         ];
     }
@@ -86,19 +88,34 @@ class MessageCrudController extends AbstractCrudController
             return $entity->getStatus();
         });
 
+
+        $markAsNotTreated = Action::new("marquer comme non-traité")->linkToCrudAction('markAsNotTreated')->setIcon("fas fa-backward")->setLabel("Annuler")->setCssClass('text-dark')->displayIf(static function ($entity) {
+            //if status is true, message is readen
+            return $entity->getStatus();
+        });
+
         //Action when status is true (="traité")
         $archive = Action::new('archiver')->setIcon('fas fa-trash')->setLabel("Archiver")->setCssClass('text-danger')->linkToCrudAction('archive')
             ->displayIf(static function ($entity) {
                 //if status is true, message is read and can ben archived
                 return $entity->getStatus();
-            });
+        });
         
         
         $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction('answer')->setCssClass("text-primary")
         ->displayIf(static function ($entity) {
             //if status is false, message is unread
             return !$entity->getStatus();
+        });
 
+        $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction(Crud::PAGE_NEW)->setCssClass("text-primary")
+            ->displayIf(static function ($entity) {
+                //if status is false, message is unread
+                return !$entity->getStatus();
+            });
+        $markAsTreated = Action::new("Marquer comme traité")->linkToCrudAction('markAsTreated')->setIcon("fas fa-clipboard-check")->setLabel("Traité?")->setCssClass('text-success')->displayIf(static function ($entity) {
+            //if status is false, message is unread
+            return !$entity->getStatus();
         });
         $markAsTreated = Action::new("Marquer comme traité")->linkToCrudAction('markAsTreated')->setIcon("fas fa-clipboard-check")->setLabel("Traité?")->setCssClass('text-success')->displayIf(static function ($entity) {
             //if status is false, message is unread
@@ -122,14 +139,14 @@ class MessageCrudController extends AbstractCrudController
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
         $url = $adminUrlGenerator
-        ->setController(MessageCrudController::class)
-        ->setAction('index')
-        ->generateUrl();
+            ->setController(MessageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
 
         $message = $context->getEntity()->getInstance();
-        $chat = $chatRepository->findOneBy(["title"=>"ARCHIVE"]);
-        
-        if (!$chat){
+        $chat = $chatRepository->findOneBy(["title" => "ARCHIVE"]);
+
+        if (!$chat) {
             $chat = new Chat();
             $chat->setTitle("ARCHIVE");
             $em->persist($chat);
@@ -138,7 +155,7 @@ class MessageCrudController extends AbstractCrudController
         $message->setChat($chat);
         $em->persist($message);
         $em->flush();
-        
+
         return $this->redirect($url);
     }
 
@@ -175,4 +192,23 @@ class MessageCrudController extends AbstractCrudController
 
         return $this->redirect($url);
     }
+
+    public function answer(MailerInterface $mailer, AdminContext $context)
+    {
+        $participant = $context->getEntity()->getInstance();
+        $email = (new Email())
+            ->to("laeti.rd@gmail.com")
+            ->subject('test')
+            ->text("je suis un test");
+
+        $mailer->send($email);
+        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
+
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+        return $this->redirect($url);
+    }
+
 }

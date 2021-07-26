@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
@@ -28,7 +29,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            AfterEntityUpdatedEvent::class => ['toggleArchiveButton'],
+            BeforeCrudActionEvent::class => ['getUser'],
             
         ];
     }
@@ -38,18 +39,11 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     /**
      * @param User $entity
      */
-    public function setPassword(User $entity): void
+    public function getUser(BeforeCrudActionEvent $event): void
     {
-        $pass = $entity->getPassword();
-
-        $entity->setPassword(
-            $this->passwordEncoder->hashPassword(
-                $entity,
-                $pass
-            )
-        );
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+        $entity = $event->getAdminContext();
+        dd($entity);
+  
     }
 
 }
