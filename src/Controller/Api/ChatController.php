@@ -8,9 +8,12 @@ use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -26,15 +29,17 @@ class ChatController extends AbstractController
     protected $messageRepository;
     protected $em;
     protected $serializer;
+    private $mailer;
 
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository)
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
     {
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
         $this->messageRepository = $messageRepository;
         $this->em = $em;
         $this->serializer = $serializer;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -80,11 +85,24 @@ class ChatController extends AbstractController
         } 
 
         $chat = $this->chatRepository->findOneWithMessages($chatId);
+       
         if(!$chat){
             return $this->json(
                 ['error' => 'La ressource demandée n\'existe pas'], 404
             );
         }
+        $messages = $chat->getMessages();
+       foreach($messages as $message) {
+           if($message->getAuthor() != $user && $message->getStatus()== 0) {
+               $newMessages[]=$message;
+           }
+       }
+       $newMessages=[];
+       foreach ($newMessages as $message) {
+           $message->setStatus(1);
+
+       }
+       $this->em->flush();
         return $this->json($chat, 200, [], [
             'groups' => 'one-chat'
         ]);
@@ -168,15 +186,42 @@ class ChatController extends AbstractController
             );
         } else {
 
+
             $this->em->persist($message);
             $this->em->flush();
-            
-            return $this->json(
-                [
-                    'message' => 'Le message a bien été ajouté à la conversation'
-                ],
-                201
-            );
+
+            // We find the recipient of the message to email him
+            /** @var Array $members */
+            $members = $chat->getUsers(); 
+           
+            foreach($members as $member) {
+                if($member->getId() !== $author->getId()) {
+                   $recipient = $member;
+                }
+            }
+
+         
+             $email = (new TemplatedEmail())
+             ->to($recipient->getEmail())
+            ->subject('Nouveau message !')
+            ->htmlTemplate('emails/new_message.html.twig')
+            ->context([
+                'user' => $recipient,
+                'author'=>$author,
+                'message'=>$message
+            ]);
+            $this->mailer->send($email);
+            // return $this->render('emails/new_message.html.twig', [
+            //     'user' => $recipient,
+            //     'author'=>$author,
+            //     'message'=>$message
+            // ]);
+             return $this->json(
+                 [
+                     'message' => 'Le message a bien été ajouté à la conversation'
+                 ],
+                 201
+             );
         }
     }
 
