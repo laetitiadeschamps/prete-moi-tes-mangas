@@ -3,7 +3,7 @@ body {
     position: relative;
     min-height: 100vh;
 }
-body::before {
+body:not(.email)::before {
     content:'';
     position: absolute;
     top:-100px;
@@ -84,4 +84,10 @@ body::before {
 }
 .badge-boolean-true {
     background: var(--color-success)!important;
+}
+
+header span.kasu {
+  
+        color:#d54028;
+    
 }

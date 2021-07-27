@@ -4,7 +4,9 @@ namespace App\Controller\Admin;
 
 use App\Entity\Chat;
 use App\Entity\Message;
+use App\Entity\User;
 use App\Repository\ChatRepository;
+use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -26,6 +28,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -37,7 +40,7 @@ class MessageCrudController extends AbstractCrudController
 
 
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer )
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
     }
@@ -46,7 +49,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return Message::class;
     }
-
+    
     /**
      * method to override creationIndexQueryBuilder to get only ADMIN messages
      */
@@ -220,6 +223,5 @@ class MessageCrudController extends AbstractCrudController
 
         return $this->redirect($url);
     }
-
 
 }
