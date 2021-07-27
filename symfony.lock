@@ -153,6 +153,9 @@
             "config/packages/lexik_jwt_authentication.yaml"
         ]
     },
+    "lorenzo/pinky": {
+        "version": "1.0.5"
+    },
     "monolog/monolog": {
         "version": "2.3.1"
     },
@@ -717,8 +720,17 @@
     "theseer/tokenizer": {
         "version": "1.2.0"
     },
+    "tijsverkoyen/css-to-inline-styles": {
+        "version": "2.2.3"
+    },
+    "twig/cssinliner-extra": {
+        "version": "v3.3.0"
+    },
     "twig/extra-bundle": {
         "version": "v3.3.1"
+    },
+    "twig/inky-extra": {
+        "version": "v3.3.0"
     },
     "twig/twig": {
         "version": "v3.3.2"
