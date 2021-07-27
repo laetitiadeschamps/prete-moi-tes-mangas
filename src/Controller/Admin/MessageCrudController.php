@@ -17,6 +17,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -64,7 +65,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return [
             TextField::new('object', 'Objet')->hideOnForm(),
-            TextField::new('author', 'Membre')->hideOnForm(),
+            AssociationField::new('author', 'Membre')->hideOnForm(),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
@@ -75,7 +76,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Messagerie')
-
+            ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
 
@@ -138,7 +139,7 @@ class MessageCrudController extends AbstractCrudController
 
         $userToReplyTo = $context->getEntity()->getInstance()->getAuthor();
         $message->setAuthor($userToReplyTo);
-        $message->setContent("...");
+        $message->setContent("  ");
 
         $chat = $chatRepository->findOneBy(["title" => "RESPONSE"]);
 

@@ -44,7 +44,7 @@ class MessageRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->select('count(m.id) as count')
-            ->where('m.status = 1')
+            ->where('m.status = 0')
             ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ADMIN')
             ->getQuery()
             ->getSingleResult();
