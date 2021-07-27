@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -272,6 +273,22 @@ class ChatController extends AbstractController
         $this->em->persist($message);
         $this->em->flush();
 
+
+        $email = (new TemplatedEmail())
+    
+        ->to(new Address($author->getEmail()))
+        ->subject('KASU Admin : accusé de réception')
+    
+        // path of the Twig template to render
+        ->htmlTemplate('emails/new_content_form.html.twig')
+    
+        // pass variables (name => value) to the template
+        ->context([
+            
+            'user' => $author,
+        ])
+    ;
+        $this->mailer->send($email);
 
         return $this->json(
             [

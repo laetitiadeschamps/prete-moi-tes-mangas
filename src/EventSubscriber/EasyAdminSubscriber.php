@@ -51,7 +51,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         //     ->text($entity->getContent());
 
         // $this->mailer->send($email);
-        $email = (new TemplatedEmail())
+    $email = (new TemplatedEmail())
     
     ->to(new Address($entity->getAuthor()->getEmail()))
     ->subject('KASU Admin : vous avez reçu un message')
