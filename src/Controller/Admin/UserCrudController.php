@@ -10,6 +10,9 @@ use App\Form\VolumeType;
 use App\Service\Localisator;
 use Doctrine\DBAL\Types\BooleanType;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -46,8 +49,34 @@ class UserCrudController extends AbstractCrudController
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->localisator = $localisator;
     }
-
-   
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            // ...
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
+        ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+            return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
+        })
+        ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+            return $action->setIcon('fas fa-plus')->setLabel('Ajouter un utilisateur')->setCssClass('btn bg-black');
+        })
+        ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
+            return $action->setIcon('fas fa-edit')->setLabel(false)->setCssClass('text-dark');
+        })
+        ->update(Crud::PAGE_EDIT, Action::DELETE, function (Action $action) {
+            return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
+        })
+        ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
+            return $action->setIcon('fas fa-save')->setLabel('Sauvegarder')->setCssClass('btn bg-black');
+        });
+    }
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle('new', 'Ajouter un utilisateur')
+            ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            ->setPageTitle('index', 'Les utilisateurs');
+    }
     public function configureFields(string $pageName): iterable
     {
         return [

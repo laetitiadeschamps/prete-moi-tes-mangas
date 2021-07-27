@@ -1,19 +1,88 @@
-{% extends 'base_email.html.twig' %}
-	{% block body %}
+{% apply inky_to_html| inline_css(source('@css/admin_message.css'))%}
+<style>
+    .w-25 {
+        width:25%;
+    }
+    .main-header {
+        display:flex;
+        justify-content:space-between;
+        border-bottom:1px solid grey;
+        margin-bottom:2em;
+         align-items:center;
+    }
+    .main-footer {
+         border-top:1px solid grey;
+         padding:2em;
+    }
+    .main-header h2 {
+         color:#d54028;
+    }
+    .message {
+        border:1px solid grey;
+        border-radius:5px;
+        padding:1em;
+        width:40%;
+        margin:2em 0;
+        font-style:italic;
+    }
 
-<h2 class="p-3">Bonjour {{ user.pseudo }}!</h2>
+    .greeting {
+        font-size:1.5em;
+
+    }
+    .footer-text {
+        padding:1em;
+        color:grey;
+        font-style:italic;
+        font-size:0.8em;
+    }
+    
+    
+</style>
+
+   
+	    <row class="main-header">
+			<columns class="logo">
+				<img src="{{ email.image('@images/logo.png') }}" class="w-25" alt=""> 
+            </columns>
+            <columns>
+					<h2>KASU</h2>
+            </columns>
+		</row>
+
+		<row >
+            <columns>
+                <center class="greeting">
+                    Bonjour {{ user.pseudo }}!
+                </center>
+            </columns>
+        </row>
+		
+        <row>
+            <columns>
+                <center>Vous avez reçu un nouveau message de la part de {{ author.pseudo }}:
+                <p class="message">
+                    {{ message.content }}
+                </p>
+                </center>
+            </columns>
+        </row>
+       <row>
+            <columns>
+                <center>
+                    <button href="#"> Voir la conversation </button>
+                </center>
+            </columns>
+        </row>
+        <row class="main-footer">
+            <columns>
+                <center class="footer-text">
+                    Ce message est un message automatique, merci de ne pas y répondre
+                </center>
+            </columns>
+        </row>
 
 
+{% endapply %}
 
-<p>
-    Vous avez reçu un nouveau message de la part de {{ author.pseudo }}:
-    <p class="border p-3 rounded">
-        {{ message.content }}
-    </p>
-
-    <p>
-        Rendez-vous <a href="{{path('api_chat_add', {id: user.id , chatId: message.chat.id })}}" class="text-decoration-none text-info">ici</a> pour voir la conversation
-    </p>
-</p>
-{% endblock %}
 
