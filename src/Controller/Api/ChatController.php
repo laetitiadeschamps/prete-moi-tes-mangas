@@ -210,18 +210,18 @@ class ChatController extends AbstractController
                 'author'=>$author,
                 'message'=>$message
             ]);
-            //$this->mailer->send($email);
-            return $this->render('emails/new_message.html.twig', [
-                'user' => $recipient,
-                'author'=>$author,
-                'message'=>$message
-            ]);
-            // return $this->json(
-            //     [
-            //         'message' => 'Le message a bien été ajouté à la conversation'
-            //     ],
-            //     201
-            // );
+            $this->mailer->send($email);
+            // return $this->render('emails/new_message.html.twig', [
+            //     'user' => $recipient,
+            //     'author'=>$author,
+            //     'message'=>$message
+            // ]);
+             return $this->json(
+                 [
+                     'message' => 'Le message a bien été ajouté à la conversation'
+                 ],
+                 201
+             );
         }
     }
 
