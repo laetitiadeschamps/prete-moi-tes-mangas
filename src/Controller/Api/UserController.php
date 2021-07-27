@@ -85,11 +85,26 @@ class UserController extends AbstractController
         $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
         // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
         isset($jsonArray['zip_code']) ? $user->setZipCode(intval($jsonArray['zip_code'])):'';
+
+        // According to the updated address and city, we update coordinates
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
+        extract($coordinates);
+        $zipCodeError = null;
+        //if an error in Localisator is returned :
+        if (isset($error)) {
+            $zipCodeError = "L'adresse n\'est pas valide";
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
+        }
         //We validate the inputs according to our constraints
         $errors = $this->validator->validate($user);
         //If there are any errors, we send back a list of errors (reformatted for clearer output) 
-        if (count($errors) > 0) {
+        if ($zipCodeError || count($errors) > 0) {
             $errorslist = array();
+            if($zipCodeError) {
+                $errorslist['zip_code']=$zipCodeError;
+            }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
                 $errorslist[$field] = $error->getMessage();
@@ -105,16 +120,9 @@ class UserController extends AbstractController
                 )
             );
         }
-        // According to the updated address and city, we update coordinates
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        extract($coordinates);
-        //if an error in Localisator is returned :
-        if (isset($error)) {
-            return $this->json($error, 400);
-        }
+        
 
-        $user->setLatitude($latitude);
-        $user->setLongitude($longitude);
+       
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200);
     }
@@ -132,30 +140,35 @@ class UserController extends AbstractController
         $this->serializer->deserialize($JsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
         // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
        $jsonArray = json_decode($request->getContent(), true);
-       if($jsonArray['zip_code']) {
+       if(isset($jsonArray['zip_code'])) {
             $user->setZipCode(intval($jsonArray['zip_code']));
        }
        
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
 
         extract($coordinates);
         //if an error in Localisator is returned :
+        $zipCodeError = null;
         if (isset($error)) {
-            return $this->json($error, 400);
+            $zipCodeError="Le code postal doit être rempli";
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
         }
-
-        $user->setLatitude($latitude);
-        $user->setLongitude($longitude);
+ 
         $user->setRoles(['ROLE_USER']);
 
         //We validate the inputs according to our constraints
         $errors = $this->validator->validate($user);
 
         //If there are any errors, we send back a list of errors (reformatted for clearer output)
-        if (count($errors) > 0) {
+        if ($zipCodeError ||count($errors) > 0) {
             $errorslist = array();
+            if($zipCodeError) {
+                $errorslist['zip_code']=$zipCodeError;
+            }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
                 $errorslist[$field] = $error->getMessage();
