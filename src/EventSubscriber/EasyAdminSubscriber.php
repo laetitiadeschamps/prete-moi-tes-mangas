@@ -42,7 +42,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     public function getUser(BeforeCrudActionEvent $event): void
     {
         $entity = $event->getAdminContext();
-        dd($entity);
+      
   
     }
 

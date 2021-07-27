@@ -4,7 +4,9 @@ namespace App\Controller\Admin;
 
 use App\Entity\Chat;
 use App\Entity\Message;
+use App\Entity\User;
 use App\Repository\ChatRepository;
+use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -25,6 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -33,11 +36,15 @@ class MessageCrudController extends AbstractCrudController
 {
 
     private $adminUrlGenerator;
+    private $messageRepository;
+    private $mailer;
     
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer )
     {
-        $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->adminUrlGenerator = $adminUrlGenerator; 
+        $this->messageRepository = $messageRepository;
+        $this->mailer = $mailer;
         
     }
 
@@ -45,7 +52,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return Message::class;
     }
-
+    
     /**
      * method to override creationIndexQueryBuilder to get only ADMIN messages
      */
@@ -81,8 +88,6 @@ class MessageCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        
-
         $markAsNotTreated = Action::new("marquer comme non-traité")->linkToCrudAction('markAsNotTreated')->setIcon("fas fa-backward")->setLabel("Annuler")->setCssClass('text-dark')->displayIf(static function ($entity) {
             //if status is true, message is readen
             return $entity->getStatus();
@@ -101,18 +106,13 @@ class MessageCrudController extends AbstractCrudController
                 return $entity->getStatus();
         });
         
+         $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction(Crud::PAGE_NEW)->setCssClass("text-primary")
+             ->displayIf(static function ($entity) {
+                // if status is false, message is unread
+                 return !$entity->getStatus();
+             });
         
-        $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction('answer')->setCssClass("text-primary")
-        ->displayIf(static function ($entity) {
-            //if status is false, message is unread
-            return !$entity->getStatus();
-        });
 
-        $answer = Action::new('répondre')->setIcon('fas fa-reply')->setLabel("Répondre")->linkToCrudAction(Crud::PAGE_NEW)->setCssClass("text-primary")
-            ->displayIf(static function ($entity) {
-                //if status is false, message is unread
-                return !$entity->getStatus();
-            });
         $markAsTreated = Action::new("Marquer comme traité")->linkToCrudAction('markAsTreated')->setIcon("fas fa-clipboard-check")->setLabel("Traité?")->setCssClass('text-success')->displayIf(static function ($entity) {
             //if status is false, message is unread
             return !$entity->getStatus();
@@ -192,23 +192,23 @@ class MessageCrudController extends AbstractCrudController
 
         return $this->redirect($url);
     }
+    
+     public function answer(MailerInterface $mailer, AdminContext $context)
+     {
+         $participant = $context->getEntity()->getInstance();
+         $email = (new Email())
+             ->to("laeti.rd@gmail.com")
+             ->subject('test')
+             ->text("je suis un test");
 
-    public function answer(MailerInterface $mailer, AdminContext $context)
-    {
-        $participant = $context->getEntity()->getInstance();
-        $email = (new Email())
-            ->to("laeti.rd@gmail.com")
-            ->subject('test')
-            ->text("je suis un test");
+         $mailer->send($email);
+         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
-        $mailer->send($email);
-        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
-
-        $url = $adminUrlGenerator
-            ->setController(MessageCrudController::class)
-            ->setAction('index')
-            ->generateUrl();
-        return $this->redirect($url);
-    }
+         $url = $adminUrlGenerator
+             ->setController(MessageCrudController::class)
+             ->setAction('index')
+             ->generateUrl();
+         return $this->redirect($url);
+     }
 
 }

@@ -56,7 +56,6 @@ class Message
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"chats", "one-chat"})
-     * @Assert\NotBlank
      * 
      */
     private $author;
@@ -64,7 +63,6 @@ class Message
     /**
      * @ORM\ManyToOne(targetEntity=Chat::class, inversedBy="messages")
      * @ORM\JoinColumn(nullable=false)
-     * @Assert\NotBlank
      * 
      */
     private $chat;

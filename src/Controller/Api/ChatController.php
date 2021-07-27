@@ -97,6 +97,7 @@ class ChatController extends AbstractController
                $newMessages[]=$message;
            }
        }
+       $newMessages=[];
        foreach ($newMessages as $message) {
            $message->setStatus(1);
 
