@@ -97,8 +97,15 @@ class UserController extends AbstractController
             $user->setLatitude($latitude);
             $user->setLongitude($longitude);
         }
-        //We validate the inputs according to our constraints
-        $errors = $this->validator->validate($user);
+        if(isset($jsonArray['password'])) {
+              //We validate the inputs according to our constraints
+              
+                $errors = $this->validator->validate($user);
+        } else {
+            //We validate the inputs according to our constraints
+            $errors = $this->validator->validate($user, null, ['update']);
+        }
+        
         //If there are any errors, we send back a list of errors (reformatted for clearer output) 
         if ($zipCodeError || count($errors) > 0) {
             $errorslist = array();
@@ -152,7 +159,7 @@ class UserController extends AbstractController
         //if an error in Localisator is returned :
         $zipCodeError = null;
         if (isset($error)) {
-            $zipCodeError="Le code postal doit être rempli";
+            $zipCodeError="L\'adresse n'\est pas valide";
         } else {
             $user->setLatitude($latitude);
             $user->setLongitude($longitude);
