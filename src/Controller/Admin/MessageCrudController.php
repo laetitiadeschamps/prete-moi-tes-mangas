@@ -102,7 +102,7 @@ class MessageCrudController extends AbstractCrudController
             });
 
 
-        $editMail = Action::new('répondre')->setIcon('fas fa-reply')->setLabel(false)->linkToCrudAction("editMail")->setCssClass("text-primary")
+        $editMail = Action::new('répondre')->setIcon('fas fa-paper-plane')->setLabel(false)->linkToCrudAction("editMail")->setCssClass("text-primary")
             ->displayIf(static function ($entity) {
                 //if status is false, message is unread
                 return !$entity->getStatus();
@@ -120,9 +120,7 @@ class MessageCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $markAsTreated)
             ->add(Crud::PAGE_INDEX, $markAsNotTreated)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
-            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
-            })
+            ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
             })

@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -49,22 +50,23 @@ class ChatController extends AbstractController
      */
     public function list($id): Response
     {
-        if(!$this->userRepository->find($id)){
+        if (!$this->userRepository->find($id)) {
             return $this->json(
-                ['error' => 'La ressource demandée n\'existe pas'], 404
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
             );
-        } 
+        }
         // fetching all chats from one user
         /** @var array $chats */
         $chats = $this->chatRepository->findAllByUser($id);
-       
+
         //fetching the last message of each conversation
-        
-        foreach($chats as $chat){
+
+        foreach ($chats as $chat) {
             $messageArray[$chat->getId()]['chat'] = $chat;
             $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());
         }
-          
+
         return $this->json($messageArray, 200, [], [
             'groups' => 'chats'
         ]);
@@ -76,33 +78,36 @@ class ChatController extends AbstractController
      */
     public function details(int $id, $chatId)
     {
-        //TODO mark as read
+        
         $user = $this->userRepository->find($id);
-        if(!$user){
+        if (!$user) {
             return $this->json(
-                ['error' => 'La ressource demandée n\'existe pas'], 404
-            );
-        } 
-
-        $chat = $this->chatRepository->findOneWithMessages($chatId);
-       
-        if(!$chat){
-            return $this->json(
-                ['error' => 'La ressource demandée n\'existe pas'], 404
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
             );
         }
-        $messages = $chat->getMessages();
-       foreach($messages as $message) {
-           if($message->getAuthor() != $user && $message->getStatus()== 0) {
-               $newMessages[]=$message;
-           }
-       }
-       $newMessages=[];
-       foreach ($newMessages as $message) {
-           $message->setStatus(1);
 
-       }
-       $this->em->flush();
+        $chat = $this->chatRepository->findOneWithMessages($chatId);
+
+        if (!$chat) {
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
+            );
+        }
+
+        //handling unread messages
+        $messages = $chat->getMessages();
+        foreach ($messages as $message) {
+            if ($message->getAuthor() != $user && $message->getStatus() == 0) {
+                $newMessages[] = $message;
+            }
+        }
+        $newMessages = [];
+        foreach ($newMessages as $message) {
+            $message->setStatus(1);
+        }
+        $this->em->flush();
         return $this->json($chat, 200, [], [
             'groups' => 'one-chat'
         ]);
@@ -111,7 +116,8 @@ class ChatController extends AbstractController
     /**
      * @Route("/chat", name="create", methods="POST")
      */
-    public function create(Request $request, $id){
+    public function create(Request $request, $id)
+    {
 
 
         $jsonData = $request->toArray();
@@ -119,12 +125,13 @@ class ChatController extends AbstractController
         $user = $this->userRepository->find($id);
         $otherUser = $this->userRepository->find($otherUserId);
 
-        if (!$user || !$otherUser){
+        if (!$user || !$otherUser) {
             return $this->json(
-                ['error' => 'La ressource demandée n\'existe pas'], 404
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
             );
         }
-        
+
         $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
         $chat = new Chat();
         $chat->setTitle($title);
@@ -152,19 +159,20 @@ class ChatController extends AbstractController
         // then the concerned user
         $author = $this->userRepository->find($id);
 
-        if(!$chat || !$author){
+        if (!$chat || !$author) {
             return $this->json(
-                ['error' => 'La ressource demandée n\'existe pas'], 404
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
             );
-        } 
+        }
         $jsonData = $request->getContent();
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
 
-        
+
         $message->setAuthor($author);
         $message->setChat($chat);
-        
+
         //datas validation
         $errors = $validator->validate($message);
 
@@ -174,7 +182,7 @@ class ChatController extends AbstractController
             foreach ($errors as $error) {
                 // name of field where there is an error
                 $field = $error->getPropertyPath();
-                
+
                 // getting the message error
                 $errorArray[$field] = $error->getMessage();
             }
@@ -192,40 +200,33 @@ class ChatController extends AbstractController
 
             // We find the recipient of the message to email him
             /** @var Array $members */
-            $members = $chat->getUsers(); 
-           
-            foreach($members as $member) {
-                if($member->getId() !== $author->getId()) {
-                   $recipient = $member;
+            $members = $chat->getUsers();
+
+            foreach ($members as $member) {
+                if ($member->getId() !== $author->getId()) {
+                    $recipient = $member;
                 }
             }
 
-         
-             $email = (new TemplatedEmail())
-             ->to($recipient->getEmail())
-            ->subject('Nouveau message !')
-            ->htmlTemplate('emails/new_message.html.twig')
-            ->context([
-                'user' => $recipient,
-                'author'=>$author,
-                'message'=>$message
-            ]);
+
+            $email = (new TemplatedEmail())
+                ->to($recipient->getEmail())
+                ->subject('Nouveau message !')
+                ->htmlTemplate('emails/new_message.html.twig')
+                ->context([
+                    'user' => $recipient,
+                    'author' => $author,
+                    'message' => $message
+                ]);
             $this->mailer->send($email);
-            // return $this->render('emails/new_message.html.twig', [
-            //     'user' => $recipient,
-            //     'author'=>$author,
-            //     'message'=>$message
-            // ]);
-             return $this->json(
-                 [
-                     'message' => 'Le message a bien été ajouté à la conversation'
-                 ],
-                 201
-             );
+
+            return $this->json($chat, 201, [], [
+                'groups' => 'one-chat'
+            ]);
         }
     }
 
-        /**
+    /**
      * Method to create a conversation with an admin through the contact form
      * @Route("/contact-admin", name="contactAdmin", methods="POST")
      */
@@ -235,30 +236,30 @@ class ChatController extends AbstractController
 
         $author = $this->userRepository->find($id);
         $admins = $this->userRepository->findAdmin();
-        
-        if (!$author || !$admins){
-           
-                return $this->json(
-                    ['error' => 'La ressource demandée n\'existe pas'], 404
-                );
-            
-        }
-       //We want to create a chat and relate it to the user and all admins.
-       
 
-       
-        $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
+        if (!$author || !$admins) {
+
+            return $this->json(
+                ['error' => 'La ressource demandée n\'existe pas'],
+                404
+            );
+        }
+        //We want to create a chat and relate it to the user and all admins.
+
+
+
+        $chatAdmin = $this->chatRepository->findOneBy(["title" => "ADMIN"]);
 
         //creation a Chat ADMIN if not existent
-        if (!$chatAdmin){
+        if (!$chatAdmin) {
             $chatAdmin = new Chat();
             $chatAdmin->setTitle("ADMIN");
             $this->em->persist($chatAdmin);
             $this->em->flush();
-        }   
+        }
 
-        $chatAdmin = $this->chatRepository->findOneBy(["title"=>"ADMIN"]);
-               
+        $chatAdmin = $this->chatRepository->findOneBy(["title" => "ADMIN"]);
+
 
         //We want to create a message with datas from POST request and link it to the chat.
         $jsonData = $request->getContent();
@@ -273,6 +274,21 @@ class ChatController extends AbstractController
         $this->em->flush();
 
 
+        $email = (new TemplatedEmail())
+
+            ->to(new Address($author->getEmail()))
+            ->subject('KASU Admin : accusé de réception')
+
+            // path of the Twig template to render
+            ->htmlTemplate('emails/new_content_form.html.twig')
+
+            // pass variables (name => value) to the template
+            ->context([
+
+                'user' => $author,
+            ]);
+        $this->mailer->send($email);
+
         return $this->json(
             [
                 'message' => 'La demande de contact a bien été envoyée'
@@ -280,6 +296,4 @@ class ChatController extends AbstractController
             201
         );
     }
-
-
 }
