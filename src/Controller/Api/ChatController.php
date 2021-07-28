@@ -280,7 +280,7 @@ class ChatController extends AbstractController
             ->subject('KASU Admin : accusé de réception')
 
             // path of the Twig template to render
-            ->htmlTemplate('emails/new_content_form.html.twig')
+            ->htmlTemplate('emails/new_contact_form.html.twig')
 
             // pass variables (name => value) to the template
             ->context([
