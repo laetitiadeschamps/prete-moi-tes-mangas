@@ -75,6 +75,7 @@ class UserCrudController extends AbstractCrudController
         return $crud
             ->setPageTitle('new', 'Ajouter un utilisateur')
             ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            //->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs');
     }
     public function configureFields(string $pageName): iterable
