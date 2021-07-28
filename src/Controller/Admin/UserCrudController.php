@@ -106,7 +106,7 @@ class UserCrudController extends AbstractCrudController
             TextField::new('address', 'Adresse')->hideOnIndex(),
             IntegerField::new('zip_code', 'Code postal')->hideOnIndex(),
             TextField::new('city', 'Ville'),
-            AssociationField::new('volumes')->hideOnIndex(),
+            AssociationField::new('volumes')->onlyWhenUpdating(),
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
     }
@@ -118,17 +118,9 @@ class UserCrudController extends AbstractCrudController
         }
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         extract($coordinates);
-        //TODO redirect if no coordinates found
-        // if(isset($error)) {
-        //     $url = $this->adminUrlGenerator
-        //     ->setController(UserCrudController::class)
-        //     ->setAction('index')
-        //     ->generateUrl();
-        //     return $this->redirect($url);
-        // }
+        
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
-        
         $pass = $user->getPassword();
 
         $user->setPassword(
