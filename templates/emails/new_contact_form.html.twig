@@ -24,29 +24,29 @@
 	.wrapper.secondary {
 		background-color: #f3f3f3;
 	}
-    .header img {
-        max-height : 150px;
-    }
+	.header img {
+		max-height: 150px;
+	}
 </style>
 
 <wrapper class="header" bgcolor="#8a8a8a">
-	
-		<row class="collapse">
-			<columns small="6" valign="middle">
-				<img class="float-left" src="{{ email.image('@images/logo.png') }}" alt="Logo">
-			</columns>
-			<columns small="6" valign="middle">
-				<h3 class="text-left">Kasu, la plateforme pour les passionnés de manga.</h3>
 
-			</columns>
-		</row>
-	
+	<row class="collapse">
+		<columns small="6" valign="middle">
+			<img class="float-left" src="{{ email.image('@images/logo.png') }}" alt="Logo">
+		</columns>
+		<columns small="6" valign="middle">
+			<h3 class="text-left">Kasu, la plateforme pour les passionnés de manga.</h3>
+
+		</columns>
+	</row>
+
 </wrapper>
 
 
 <container>
 	<row>
-		
+
 		<columns>
 			<h1 class="text-left">Bonjour
 				{{ user.pseudo }}!</h1>
@@ -58,7 +58,7 @@
 		<p>Merci de l'intérêt que vous portez à Kasu.</p>
 		<p>Nous avons bien reçu votre demande, vous recevrez une réponse par mail sous les meilleurs délais.</p>
 		<p>
-		L'équipe de Kasu vous souhaite une bonne journée!
+			L'équipe de Kasu vous souhaite une bonne journée!
 		</p>
 		{{ message.content }}
 
@@ -66,15 +66,18 @@
 
 </container>
 <wrapper class="footer" bgcolor="#8a8a8a">
-	
-		<row class="collapse">
 
-			<columns small="6" valign="middle">
-				<h6 class="text-center">Veuillez ne pas répondre à ce mail.</h6>
+	<row class="collapse">
 
-			</columns>
-		</row>
-	
+		<columns small="6" valign="middle">
+			<h6 class="text-center">Veuillez ne pas répondre à ce mail.</h6>
+			<p>
+				<a href="#">Kasu</a> © - 2021 - Tous droits réservés.
+			</p>
+		</columns>
+
+	</row>
+
 </wrapper>
 
 {# ... #}
