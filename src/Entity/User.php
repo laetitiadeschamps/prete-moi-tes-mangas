@@ -31,7 +31,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email(
-     *     message = "'{{ value }}' n'est pas un email valide."
+     *     message = "'{{ value }}' n'est pas un email valide.", groups={"update"}
      * )
      * @Assert\NotBlank(message="L'email ne peut pas être vide.")
      * @Groups({"users"})
@@ -40,7 +40,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="json")
-     * @Assert\NotBlank(message="Un role doit être selectionné.")
+     * @Assert\NotBlank(message="Un role doit être selectionné.", groups={"update"})
      * @Groups({"users"})
      */
     private $roles = [];
@@ -59,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100, unique=true)
-     * @Assert\NotBlank(message="Le pseudo doit être renseigné.")
+     * @Assert\NotBlank(message="Le pseudo doit être renseigné.", groups={"update"})
      * @Assert\Length(
      *      min = 4,
      *      max = 15,
@@ -73,7 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Le nom doit être renseigné.")
+     * @Assert\NotBlank(message="Le nom doit être renseigné.", groups={"update"})
      * @Assert\Length(   
      *      max = 50,
      *      maxMessage = "Votre nom doit faire moins de  {{ limit }} caractères."
@@ -84,7 +84,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Le prénom doit être renseigné.")
+     * @Assert\NotBlank(message="Le prénom doit être renseigné.", groups={"update"})
      * @Assert\Length(     
      *      max = 50,
      *      maxMessage = "Votre prénom doit faire moins de {{ limit }} caractères."
@@ -107,14 +107,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="L'adresse doit être renseignée.")
+     * @Assert\NotBlank(message="L'adresse doit être renseignée.", groups={"update"})
      * @Groups({"users"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned":true})
-     * @Assert\NotBlank(message="Le code postal doit être renseigné.")
+     * @Assert\NotBlank(message="Le code postal doit être renseigné.", groups={"update"})
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
@@ -125,7 +125,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La ville doit être renseignée.")
+     * @Assert\NotBlank(message="La ville doit être renseignée.", groups={"update"})
      * @Groups({"users", "search"})
      */
     private $city;
