@@ -66,6 +66,10 @@ class UserCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
                 return $action->setIcon('fas fa-edit')->setLabel(false)->setCssClass('text-dark');
             })
+            ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
+                return $action->setCssClass('btn bg-black');
+            })
+           
             ->update(Crud::PAGE_EDIT, Action::DELETE, function (Action $action) {
                 return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
             })
