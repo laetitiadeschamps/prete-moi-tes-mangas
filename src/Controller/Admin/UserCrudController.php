@@ -58,7 +58,7 @@ class UserCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, Action::INDEX)   
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
             ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-                return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
+                return $action->setIcon('fas fa-trash')->setLabel(false);
             })
             ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
                 return $action->setIcon('fas fa-plus')->setLabel('Ajouter un utilisateur')->setCssClass('btn bg-black');
@@ -160,6 +160,7 @@ class UserCrudController extends AbstractCrudController
         // }
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
+        dd($user);
        
         $entityManager->persist($user);
         $entityManager->flush();   

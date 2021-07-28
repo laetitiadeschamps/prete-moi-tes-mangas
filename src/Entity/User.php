@@ -125,7 +125,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La ville doit être renseignée.", groups={"update"})
+     * @Assert\NotBlank(message="La ville doit être renseignée.")
      * @Groups({"users", "search"})
      */
     private $city;
