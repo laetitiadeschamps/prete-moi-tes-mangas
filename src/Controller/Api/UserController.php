@@ -9,9 +9,11 @@ use App\Repository\UserRepository;
 use App\Repository\UserVolumeRepository;
 use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
@@ -31,8 +33,9 @@ class UserController extends AbstractController
     private $validator;
     private $userVolumeRepository;
     private $chatRepository;
+    private $mailer;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
+    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -41,6 +44,7 @@ class UserController extends AbstractController
         $this->validator = $validator;
         $this->userVolumeRepository = $userVolumeRepository;
         $this->chatRepository = $chatRepository;
+        $this->mailer = $mailer;
     }
     /**
      * Method to see a user's profile (the logged in user or any other user)
@@ -188,8 +192,20 @@ class UserController extends AbstractController
                 $user->getPassword()
             )
         );
+
+
         $this->em->persist($user);
         $this->em->flush();
+
+        $email = (new TemplatedEmail())
+                ->to($user->getEmail())
+                ->subject('KASU Admin : création de compte')
+                ->htmlTemplate('emails/new_account.html.twig')
+                ->context([
+                    'user' => $user,
+                   
+                ]);
+            $this->mailer->send($email);
         return $this->json('L\'utilisateur ' . $user->getPseudo() . ' a bien été créé', 201);
     }
 }
