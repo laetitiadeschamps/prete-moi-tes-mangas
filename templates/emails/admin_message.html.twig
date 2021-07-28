@@ -3,7 +3,9 @@
 	.header {
 		background: #8a8a8a;
 	}
-
+	.footer {
+		border-top: 1px solid grey;
+	}
 	.header .columns {
 		padding-bottom: 0;
 	}
@@ -15,8 +17,13 @@
 
 	.header .wrapper-inner {
 		padding: 20px; /*controls the height of the header*/
-	}
+		border-bottom: 1px solid black;
 
+	}
+	.footer .wrapper-inner {
+		padding: 20px; /*controls the height of the header*/
+		border-top: 1px solid black;
+	}
 	.header .container {
 		background-color: #8a8a8a;
 	}
@@ -25,7 +32,52 @@
 		background-color: #f3f3f3;
 	}
 	.header img {
-		max-height: 150px;
+		max-height: 100px;
+	}
+	a {
+		text-decoration: none;
+		color: black; !important
+	}
+	.w-25 {
+		width: 25%;
+	}
+	.logo {
+		width: 100%;
+	}
+	.main-header {
+		display: flex;
+		justify-content: space-between;
+		border-bottom: 1px solid grey;
+		margin-bottom: 2em;
+		align-items: center;
+		width: 100%;
+	}
+	.main-footer {
+		border-top: 1px solid grey;
+		padding: 2em;
+	}
+	.main-header h2 {
+		color: #d54028;
+	}
+	.message {
+		border: 1px solid grey;
+		border-radius: 5px;
+		padding: 1em;
+		width: 40%;
+		margin: 2em 0;
+		font-style: italic;
+	}
+
+	.greeting {
+		font-size: 1.5em;
+		padding-top: 1em;
+
+	}
+	.footer-text {
+		padding: 1em;
+		color: grey;
+		font-style: italic;
+		font-size: 0.8em;
 	}
 </style>
 
@@ -42,42 +94,37 @@
 	</row>
 
 </wrapper>
+<row>
+	<columns>
+		<center class="greeting">
+			Bonjour
+			{{ user.pseudo }}!
+		</center>
+	</columns>
+</row>
+
+<row>
+	<columns>
+		<center>Nous avons traité votre demande.
+			<strong>Notre réponse
+			</strong>:
+			<p class="message">
+				{{ message.content }}
+			</p>
+		</center>
+	</columns>
+</row>
 
 
-<container>
-	<row>
-
-		<columns>
-			<h1 class="text-center">Bonjour
-				{{ user.pseudo }}!</h1>
-		</columns>
-
-		{# ... #}
-	</row>
-	<row>
-		<p>Merci de l'intérêt que vous portez à Kasu.</p>
-		<p>Nous avons traité votre demande.</p>
-		<p>
-			<strong>Notre réponse :</strong>
-		</p>
-		{{ message.content }}
-
-	</row>
-	<row>
-		<p>
-			L'équipe de Kasu vous souhaite une bonne journée!
-		</p>
-
-	</row>
-</container>
 <wrapper class="footer" bgcolor="#8a8a8a">
 
 	<row class="collapse">
 
 		<columns small="6" valign="middle">
-			<h6 class="text-center">Veuillez ne pas répondre à ce mail.</h6>
-<p>
-				<a href="#">Kasu</a> © - 2021 - Tous droits réservés.
+			<h6 class="text-center">Ce mail est un message automatique, merci de ne pas y répondre.</h6>
+			<p class="text-center">
+				<a class="alert" href="#"><strong>Kasu © 2021</strong></a>
+				  - Tous droits réservés.
 			</p>
 		</columns>
 
