@@ -83,17 +83,18 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('new', 'Ajouter un utilisateur')
-            ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
-            //->setPageTitle('edit','Modifier')
-            ->setPageTitle('index', 'Les utilisateurs');
+            //->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            ->setPageTitle('edit','Modifier')
+            ->setPageTitle('index', 'Les utilisateurs')
+            ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );
     }
     public function configureFields(string $pageName): iterable
     {
         return [
             IdField::new('id')->hideOnForm(),
-            TextField::new('pseudo'),
-            TextField::new('firstname')->hideOnIndex(),
-            TextField::new('lastname')->hideOnIndex(),
+            TextField::new('pseudo')->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('firstname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('lastname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
             ChoiceField::new('roles')
                 ->setLabel("Role")
                 ->setChoices([ 
@@ -103,18 +104,19 @@ class UserCrudController extends AbstractCrudController
                         ->allowMultipleChoices(true)
                         ->renderExpanded(true)
                         ->setFormType(ChoiceType::class)
+                        ->setFormTypeOptions(['validation_groups' => ['edit']])
                        ,           
-            BooleanField::new('status', 'Actif')->onlyOnIndex(),
+            BooleanField::new('status', 'Actif')->onlyOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
             ChoiceField::new('status', 'Actif')->onlyOnForms()->setChoices([
                 'Actif'=>true,
                 'Inactif'=>false
-            ]),
-            TextField::new('email'),
+            ])->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('email')->setFormTypeOptions(['validation_groups' => ['edit']]),
             
             TextField::new('password')->onlyWhenCreating()->setFormType(PasswordType::class),
-            TextField::new('address', 'Adresse')->hideOnIndex(),
-            IntegerField::new('zip_code', 'Code postal')->hideOnIndex(),
-            TextField::new('city', 'Ville'),
+            TextField::new('address', 'Adresse')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            IntegerField::new('zip_code', 'Code postal')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('city', 'Ville')->setFormTypeOptions(['validation_groups' => ['edit']]),
             AssociationField::new('volumes')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
@@ -158,7 +160,6 @@ class UserCrudController extends AbstractCrudController
         // }
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
-        
        
         $entityManager->persist($user);
         $entityManager->flush();   
