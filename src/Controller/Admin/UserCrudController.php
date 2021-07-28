@@ -79,8 +79,8 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('new', 'Ajouter un utilisateur')
-            //->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
-            ->setPageTitle('edit','Modifier')
+            ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            //->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs');
     }
     public function configureFields(string $pageName): iterable
@@ -123,17 +123,9 @@ class UserCrudController extends AbstractCrudController
         }
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         extract($coordinates);
-        //TODO redirect if no coordinates found
-        // if(isset($error)) {
-        //     $url = $this->adminUrlGenerator
-        //     ->setController(UserCrudController::class)
-        //     ->setAction('index')
-        //     ->generateUrl();
-        //     return $this->redirect($url);
-        // }
+        
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
-        
         $pass = $user->getPassword();
 
         $user->setPassword(
