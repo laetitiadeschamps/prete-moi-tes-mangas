@@ -68,7 +68,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return [
             TextField::new('object', 'Objet')->hideOnForm(),
-            AssociationField::new('author', 'Membre')->hideOnForm(),
+            AssociationField::new('author', 'Membre')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
@@ -80,7 +80,6 @@ class MessageCrudController extends AbstractCrudController
         return $crud
             ->setPageTitle('index', 'Messagerie')
             ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
-            //->setPageTitle('edit', 'Répondre')
             ->setSearchFields(['object', 'author', 'content']);
     }
 
@@ -119,12 +118,13 @@ class MessageCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $editMail)
             ->add(Crud::PAGE_INDEX, $markAsTreated)
             ->add(Crud::PAGE_INDEX, $markAsNotTreated)
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
             })
-            
+
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
     }
 
