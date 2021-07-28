@@ -918,7 +918,7 @@
     color: #cacaca; }
   
   a {
-    color: #2199e8;
+    color: #020202;
     text-decoration: none;
     font-family: Helvetica, Arial, sans-serif;
     font-weight: normal;
@@ -926,11 +926,11 @@
     text-align: left;
     line-height: 130%; }
     a:hover {
-      color: #147dc2; }
+      color: #c21414; }
     a:active {
-      color: #147dc2; }
+      color: #c21414; }
     a:visited {
-      color: #2199e8; }
+      color: #e82121; }
   
   h1 a,
   h1 a:visited,
