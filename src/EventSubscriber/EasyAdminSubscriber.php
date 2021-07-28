@@ -7,6 +7,7 @@ use App\Entity\Message;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -33,7 +34,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     {
         return [
             AfterEntityUpdatedEvent::class => ['sendEmail'],
-            
+                        
         ];
     }
 
