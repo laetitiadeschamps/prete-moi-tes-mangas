@@ -52,23 +52,28 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
+          
             // ...
             ->add(Crud::PAGE_EDIT, Action::DELETE)
-        ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-            return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
-        })
-        ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-            return $action->setIcon('fas fa-plus')->setLabel('Ajouter un utilisateur')->setCssClass('btn bg-black');
-        })
-        ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
-            return $action->setIcon('fas fa-edit')->setLabel(false)->setCssClass('text-dark');
-        })
-        ->update(Crud::PAGE_EDIT, Action::DELETE, function (Action $action) {
-            return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
-        })
-        ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
-            return $action->setIcon('fas fa-save')->setLabel('Sauvegarder')->setCssClass('btn bg-black');
-        });
+            ->add(Crud::PAGE_EDIT, Action::INDEX)   
+            ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
+            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+                return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
+            })
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setIcon('fas fa-plus')->setLabel('Ajouter un utilisateur')->setCssClass('btn bg-black');
+            })
+            ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
+                return $action->setIcon('fas fa-edit')->setLabel(false)->setCssClass('text-dark');
+            })
+            ->update(Crud::PAGE_EDIT, Action::DELETE, function (Action $action) {
+                return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
+            })
+            
+            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
+                return $action->setIcon('fas fa-save')->setLabel('Sauvegarder')->setCssClass('btn bg-black');
+            })
+            ->reorder(Crud::PAGE_EDIT, [ Action::DELETE, Action::SAVE_AND_RETURN, Action::INDEX]);
     }
     public function configureCrud(Crud $crud): Crud
     {
@@ -106,7 +111,7 @@ class UserCrudController extends AbstractCrudController
             TextField::new('address', 'Adresse')->hideOnIndex(),
             IntegerField::new('zip_code', 'Code postal')->hideOnIndex(),
             TextField::new('city', 'Ville'),
-            AssociationField::new('volumes')->hideOnIndex(),
+            AssociationField::new('volumes')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
     }
