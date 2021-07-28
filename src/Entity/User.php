@@ -173,7 +173,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $chats;
 
     /**
-     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author")
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author", cascade={"remove"})
      * 
      */
     private $messages;
