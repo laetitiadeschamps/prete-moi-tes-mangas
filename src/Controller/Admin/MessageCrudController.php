@@ -16,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Menu\CrudMenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -73,10 +74,9 @@ class MessageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('object', 'Objet')->hideOnForm(),
-            AssociationField::new('author', 'Membre')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
-            TextField::new('object', 'Objet')->OnlyWhenCreating(),
-            TextField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('disabled', 'disabled')->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id'])->getPseudo():''),
+            TextField::new('object', 'Objet')->onlyWhenCreating(),
+            TextField::new('object', 'Objet')->OnlyOnIndex(),
+            AssociationField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id']):null),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
@@ -122,21 +122,24 @@ class MessageCrudController extends AbstractCrudController
         });
 
 
-        return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
+        return $actions
+            ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ->remove(Crud::PAGE_INDEX, Action::EDIT)
             ->add(Crud::PAGE_INDEX, $archive)
             ->add(Crud::PAGE_INDEX, $editMail)
             ->add(Crud::PAGE_INDEX, $markAsTreated)
             ->add(Crud::PAGE_INDEX, $markAsNotTreated)
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
+            })
             ->add(Crud::PAGE_EDIT, Action::DELETE)
-            ->remove(Crud::PAGE_INDEX, Action::EDIT)
-            ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
             })
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
-                return $action->setCssClass('btn bg-black');
+                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
             })
-
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
     }
 
@@ -233,29 +236,10 @@ class MessageCrudController extends AbstractCrudController
         $message->setStatus(false);
         $em->persist($message);
         $em->flush();
-
         return $this->redirect($url);
     }
 
   
-    public function persistEntity(EntityManagerInterface $em, $message):void
-    {
-        $recipient = $this->userRepository->find($_GET['id']);
-        $email = (new TemplatedEmail())
-    
-        ->to(new Address($recipient->getEmail()))
-        ->subject('KASU Admin : vous avez reçu un message')
-    
-        // path of the Twig template to render
-        ->htmlTemplate('emails/admin_message.html.twig')
-    
-        // pass variables (name => value) to the template
-        ->context([
-            'message'=> $message,
-            'user' => $recipient
-        ]);
-        $this->mailer->send($email);
-        
-    } 
+   
 
 }

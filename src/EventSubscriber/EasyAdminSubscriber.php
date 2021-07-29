@@ -3,10 +3,15 @@
 namespace App\EventSubscriber;
 
 use App\Controller\Admin\MessageCrudController;
+
 use App\Entity\Message;
-use App\Entity\User;
+use App\Repository\ChatRepository;
+use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -19,54 +24,69 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
     private $adminUrlGenerator;
     private $mailer;
+    private $chatRepository;
+    private $userRepository;
     
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer)
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer, ChatRepository $chatRepository, UserRepository $userRepository)
     {
         
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->mailer = $mailer;
+        $this->chatRepository = $chatRepository;
+        $this->userRepository=$userRepository;
      
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            AfterEntityUpdatedEvent::class => ['sendEmail'],
-            
+            AfterEntityPersistedEvent::class => ['sendEmail'],
+            BeforeEntityPersistedEvent::class =>['setChat']
         ];
     }
 
-
-    public function sendEmail(AfterEntityUpdatedEvent $event)
+    public function setChat(BeforeEntityPersistedEvent $event)
     {
-        
         $entity = $event->getEntityInstance();
         if (!($entity instanceof Message)) {
             return;
         }
-        // $email = (new Email())
-        //     ->to($entity->getAuthor()->getEmail())
-        //     ->subject('KASU Admin : vous avez reçu un message')
-        //     ->text($entity->getContent());
+        $chat = $this->chatRepository->findOneBy(["title" => "RESPONSE"]);
 
-        // $this->mailer->send($email);
-    $email = (new TemplatedEmail())
-    
-    ->to(new Address($entity->getAuthor()->getEmail()))
-    ->subject('KASU Admin : vous avez reçu un message')
+        $entity->setChat($chat);
+       
+    }
 
-    // path of the Twig template to render
-    ->htmlTemplate('emails/admin_message.html.twig')
+    public function sendEmail(AfterEntityPersistedEvent $event)
+    {
+        $entity = $event->getEntityInstance();
+        if (!($entity instanceof Message)) {
+            return;
+        }
 
-    // pass variables (name => value) to the template
-    ->context([
-        'message'=> $entity,
-        'user' => $entity->getAuthor(),
-    ])
-;
-    $this->mailer->send($email);
+        if(isset($_GET['id'])) {
+            $recipient = $this->userRepository->find($_GET['id']);
+        } else {
+            $recipient = $entity->getAuthor();
+        }
+        $email = (new TemplatedEmail())
+        
+        ->to(new Address($recipient->getEmail()))
+        ->subject('KASU Admin : vous avez reçu un message')
+
+        // path of the Twig template to render
+        ->htmlTemplate('emails/admin_message.html.twig')
+
+        // pass variables (name => value) to the template
+        ->context([
+            'message'=> $entity,
+            'user' => $recipient,
+        ])
+    ;
+        $this->mailer->send($email);
 
     }
+    
 
 }

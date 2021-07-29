@@ -149,6 +149,7 @@ class UserCrudController extends AbstractCrudController
         if (!($user instanceof User)) {
             return;
         }
+        
         $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
         extract($coordinates);
         //TODO redirect if no coordinates found
