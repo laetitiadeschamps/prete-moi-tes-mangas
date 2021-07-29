@@ -9,9 +9,11 @@ use App\Repository\UserRepository;
 use App\Repository\UserVolumeRepository;
 use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
@@ -31,8 +33,9 @@ class UserController extends AbstractController
     private $validator;
     private $userVolumeRepository;
     private $chatRepository;
+    private $mailer;
 
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
+    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -41,6 +44,7 @@ class UserController extends AbstractController
         $this->validator = $validator;
         $this->userVolumeRepository = $userVolumeRepository;
         $this->chatRepository = $chatRepository;
+        $this->mailer = $mailer;
     }
     /**
      * Method to see a user's profile (the logged in user or any other user)
@@ -85,11 +89,33 @@ class UserController extends AbstractController
         $this->serializer->deserialize($jsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
         // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
         isset($jsonArray['zip_code']) ? $user->setZipCode(intval($jsonArray['zip_code'])):'';
-        //We validate the inputs according to our constraints
-        $errors = $this->validator->validate($user);
+
+        // According to the updated address and city, we update coordinates
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
+        extract($coordinates);
+        $zipCodeError = null;
+        //if an error in Localisator is returned :
+        if (isset($error)) {
+            $zipCodeError = "L'adresse n\'est pas valide";
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
+        }
+        if(isset($jsonArray['password'])) {
+              //We validate the inputs according to our constraints
+              
+                $errors = $this->validator->validate($user);
+        } else {
+            //We validate the inputs according to our constraints
+            $errors = $this->validator->validate($user, null, ['update']);
+        }
+        
         //If there are any errors, we send back a list of errors (reformatted for clearer output) 
-        if (count($errors) > 0) {
+        if ($zipCodeError || count($errors) > 0) {
             $errorslist = array();
+            if($zipCodeError) {
+                $errorslist['zip_code']=$zipCodeError;
+            }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
                 $errorslist[$field] = $error->getMessage();
@@ -105,10 +131,9 @@ class UserController extends AbstractController
                 )
             );
         }
-        // According to the updated address and city, we update coordinates
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
+        
+
+       
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200);
     }
@@ -121,20 +146,40 @@ class UserController extends AbstractController
     {
 
         $JsonData = $request->getContent();
-        $user = $this->serializer->deserialize($JsonData, User::class, 'json');
+        $user = new User();
+
+        $this->serializer->deserialize($JsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+        // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
+       $jsonArray = json_decode($request->getContent(), true);
+       if(isset($jsonArray['zip_code'])) {
+            $user->setZipCode(intval($jsonArray['zip_code']));
+       }
+       
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
-        $user->setLatitude($coordinates['latitude']);
-        $user->setLongitude($coordinates['longitude']);
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
+
+        extract($coordinates);
+        //if an error in Localisator is returned :
+        $zipCodeError = null;
+        if (isset($error)) {
+            $zipCodeError="L\'adresse n'\est pas valide";
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
+        }
+ 
         $user->setRoles(['ROLE_USER']);
 
         //We validate the inputs according to our constraints
         $errors = $this->validator->validate($user);
 
         //If there are any errors, we send back a list of errors (reformatted for clearer output)
-        if (count($errors) > 0) {
+        if ($zipCodeError ||count($errors) > 0) {
             $errorslist = array();
+            if($zipCodeError) {
+                $errorslist['zip_code']=$zipCodeError;
+            }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
                 $errorslist[$field] = $error->getMessage();
@@ -147,8 +192,20 @@ class UserController extends AbstractController
                 $user->getPassword()
             )
         );
+
+
         $this->em->persist($user);
         $this->em->flush();
+
+        $email = (new TemplatedEmail())
+                ->to($user->getEmail())
+                ->subject('KASU Admin : création de compte')
+                ->htmlTemplate('emails/new_account.html.twig')
+                ->context([
+                    'user' => $user,
+                   
+                ]);
+            $this->mailer->send($email);
         return $this->json('L\'utilisateur ' . $user->getPseudo() . ' a bien été créé', 201);
     }
 }

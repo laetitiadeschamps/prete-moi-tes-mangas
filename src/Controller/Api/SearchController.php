@@ -30,7 +30,11 @@ class SearchController extends AbstractController
     {
         $coordinates = $localisator->gpsByZipcode($zipcode);
         extract($coordinates);
-        
+        //if an error in Localisator is returned :
+        if (isset($error)){
+            return $this->json($coordinates['error'], 400);
+        }
+
         $users = $userRepository->search($latitude, $longitude);
         
         $arrayResult=[];
@@ -41,21 +45,21 @@ class SearchController extends AbstractController
                 $pseudo = $user->getPseudo();
 
                 $arrayResult[$pseudo]=["userId" => $user->getId()];
-
+                $arrayResult[$pseudo]["mangas"]=[];
 
                 foreach ($user->getVolumes() as $volume) {
 
                     $mangaName = $volume->getVolume()->getManga()->getTitle();
                     
-                    if (!array_key_exists($mangaName, $arrayResult[$pseudo])) {
+                    if (!array_key_exists($mangaName, $arrayResult[$pseudo]["mangas"])) {
 
-                        $arrayResult[$pseudo][$mangaName] = ["mangaInfo" => $volume->getVolume()->getManga()];
-
-                        $arrayResult[$pseudo][$mangaName]["volumes"][] =  $volume;
+                        $arrayResult[$pseudo]["mangas"][$mangaName]["mangaInfo"] = $volume->getVolume()->getManga();
+                       
+                        $arrayResult[$pseudo]["mangas"][$mangaName]["userVolumes"][] =  $volume;
 
                     } else {
 
-                        $arrayResult[$pseudo][$mangaName]["volumes"][] =  $volume;
+                        $arrayResult[$pseudo]["mangas"][$mangaName]["userVolumes"][] =  $volume;
 
                     }
                 }

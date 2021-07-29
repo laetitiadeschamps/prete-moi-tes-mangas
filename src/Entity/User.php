@@ -31,16 +31,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email(
-     *     message = "'{{ value }}' n'est pas un email valide."
+     *     message = "'{{ value }}' n'est pas un email valide.", groups={"update"}
      * )
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="L'email ne peut pas être vide.")
      * @Groups({"users"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Un role doit être selectionné.", groups={"update"})
      * @Groups({"users"})
      */
     private $roles = [];
@@ -48,7 +48,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string Thse hashed password
      * @ORM\Column(type="string")
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le mot de passe ne peut pas être vide.")
      * @Assert\Regex(
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
      *      message="Le mot de passe doit faire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=-"
@@ -59,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100, unique=true)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le pseudo doit être renseigné.", groups={"update"})
      * @Assert\Length(
      *      min = 4,
      *      max = 15,
@@ -73,7 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le nom doit être renseigné.", groups={"update"})
      * @Assert\Length(   
      *      max = 50,
      *      maxMessage = "Votre nom doit faire moins de  {{ limit }} caractères."
@@ -84,7 +84,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le prénom doit être renseigné.", groups={"update"})
      * @Assert\Length(     
      *      max = 50,
      *      maxMessage = "Votre prénom doit faire moins de {{ limit }} caractères."
@@ -107,14 +107,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="L'adresse doit être renseignée.", groups={"update"})
      * @Groups({"users"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned":true})
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le code postal doit être renseigné.", groups={"update"})
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
@@ -125,7 +125,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @Assert\NotBlank(message="La ville doit être renseignée.")
      * @Groups({"users", "search"})
      */
     private $city;
@@ -137,23 +137,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $holiday_mode;
 
     /**
-     * @ORM\Column(type="smallint")
+     * @ORM\Column(type="boolean")
      * @Assert\Regex("/^(0|1)$/")
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"users"})
      */
     private $status;
 
     /**
-     *@ORM\Column(type="float")
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
+     * @ORM\Column(type="float")
      * @Groups({"users", "search"})
      */
     private $latitude;
 
     /**
      * @ORM\Column(type="float")
-     * @Assert\NotBlank(message="Ce champ ne peut pas être vide.")
      * @Groups({"users", "search"})
      */
     private $longitude;
@@ -176,7 +173,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $chats;
 
     /**
-     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author")
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="author", cascade={"remove"})
      * 
      */
     private $messages;
@@ -190,13 +187,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->status = false;
+        $this->status = true;
         $this->holiday_mode = false;
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
         $this->chats = new ArrayCollection();
         $this->messages = new ArrayCollection();
         $this->volumes = new ArrayCollection();
+        $this->picture = $this->randomString();
     }
     
     public function getId(): ?int
@@ -253,6 +251,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function randomString() {
+        $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return substr(str_shuffle($permitted_chars), 0, 20);
+    }
+
+   
     /**
      * @see PasswordAuthenticatedUserInterface
      */

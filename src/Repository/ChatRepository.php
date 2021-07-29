@@ -36,6 +36,8 @@ class ChatRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+  
    
     /**
      * method to get one chat from one user with all users and messages related to
