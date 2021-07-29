@@ -7,6 +7,7 @@ use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -32,17 +33,22 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 
 class MessageCrudController extends AbstractCrudController
 {
-
     private $adminUrlGenerator;
+    private $userRepository;
+    private $chatRepository;
+    private $mailer;
 
-
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer )
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer, UserRepository $userRepository, ChatRepository $chatRepository)
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->userRepository = $userRepository;
+        $this->chatRepository = $chatRepository;
+        $this->mailer = $mailer;
     }
 
     public static function getEntityFqcn(): string
@@ -69,6 +75,8 @@ class MessageCrudController extends AbstractCrudController
         return [
             TextField::new('object', 'Objet')->hideOnForm(),
             AssociationField::new('author', 'Membre')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
+            TextField::new('object', 'Objet')->OnlyWhenCreating(),
+            TextField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('disabled', 'disabled')->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id'])->getPseudo():''),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
@@ -79,6 +87,7 @@ class MessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Messagerie')
+            ->setPageTitle('new', 'Créer un message')
             //->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
@@ -123,6 +132,9 @@ class MessageCrudController extends AbstractCrudController
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
+            })
+            ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
+                return $action->setCssClass('btn bg-black');
             })
 
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
@@ -224,5 +236,26 @@ class MessageCrudController extends AbstractCrudController
 
         return $this->redirect($url);
     }
+
+  
+    public function persistEntity(EntityManagerInterface $em, $message):void
+    {
+        $recipient = $this->userRepository->find($_GET['id']);
+        $email = (new TemplatedEmail())
+    
+        ->to(new Address($recipient->getEmail()))
+        ->subject('KASU Admin : vous avez reçu un message')
+    
+        // path of the Twig template to render
+        ->htmlTemplate('emails/admin_message.html.twig')
+    
+        // pass variables (name => value) to the template
+        ->context([
+            'message'=> $message,
+            'user' => $recipient
+        ]);
+        $this->mailer->send($email);
+        
+    } 
 
 }
