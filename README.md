@@ -27,7 +27,7 @@ Dans une V2, nous envisageons de :
 - Pouvoir charger une photo de profil
 
 
-## Stack:
+## Stack
 la partie back est en Symfony, et le front est en React. Ce repo gère uniquement la partie Back.
 Le real time du chat est géré via un serveur Node et socket.io.
 La communication fonctionne donc en mode API, avec sécurisation par token JWT. 
@@ -40,3 +40,4 @@ Le back peut être décomposé en deux parties :
 - les controllers Admin, qui gèrent la logique du backoffice, qui est entièrement créé en Symfony avec le bundle EasyAdmin3.
 - La base de données de manga a été remplie via des appels à une API permettant de récupérer toutes les informations d'un manga à partir de son titre, dont l'url de l'image, hébergée sur un CDN. Les tomes sont créés à la volée selon le nombre de tomes, information renvoyée par l'API
 
+La branche utilisée est la branche dev, la branche main n'est pas à jour pour le moment, car l'application n'est pas en production
