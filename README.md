@@ -39,5 +39,3 @@ Le back peut être décomposé en deux parties :
 - les controllers d'API, qui renvoient les données nécessaires au Front, en format JSON
 - les controllers Admin, qui gèrent la logique du backoffice, qui est entièrement créé en Symfony avec le bundle EasyAdmin3.
 - La base de données de manga a été remplie via des appels à une API permettant de récupérer toutes les informations d'un manga à partir de son titre, dont l'url de l'image, hébergée sur un CDN. Les tomes sont créés à la volée selon le nombre de tomes, information renvoyée par l'API
-
-La branche utilisée est la branche dev, la branche main n'est pas à jour pour le moment, car l'application n'est pas en production
