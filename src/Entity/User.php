@@ -194,6 +194,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->chats = new ArrayCollection();
         $this->messages = new ArrayCollection();
         $this->volumes = new ArrayCollection();
+        $this->picture = $this->randomString();
     }
     
     public function getId(): ?int
@@ -250,6 +251,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function randomString() {
+        $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return substr(str_shuffle($permitted_chars), 0, 20);
+    }
+
+   
     /**
      * @see PasswordAuthenticatedUserInterface
      */

@@ -29,9 +29,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class MangaCrudController extends AbstractCrudController
 {
-
     private $jikanApi;
-
     private $mangaRepository;
     private $volumesCreation;
 
@@ -39,10 +37,6 @@ class MangaCrudController extends AbstractCrudController
     {
         return Manga::class;
     }
-
-
-
-
 
     public function configureFields(string $pageName): iterable
     {
@@ -58,8 +52,6 @@ class MangaCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            // ...
-
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::SAVE_AND_ADD_ANOTHER)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
@@ -70,7 +62,6 @@ class MangaCrudController extends AbstractCrudController
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setCssClass('btn bg-black');
             })
-
             ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
             })
@@ -102,14 +93,14 @@ class MangaCrudController extends AbstractCrudController
     }
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-
+        //When a new manga is created, we call our API to get all other information
         $result = $this->jikanApi->fetch($entityInstance->getTitle());
         $entityInstance->setPicture($result["results"][0]["image_url"]);
         $entityInstance->setVolumeNumber($result["results"][0]["volumes"]);
         $entityInstance->setSynopsis($result["results"][0]["synopsis"]);
         $entityManager->persist($entityInstance);
         $entityManager->flush();
-
+        //Then we create as many entries in the volumes table as the number of volumes sent back by the API
         $manga = $this->mangaRepository->findOneBy(['title' => $entityInstance->getTitle()]);
         $this->volumesCreation->createAll($manga->getId());
     }

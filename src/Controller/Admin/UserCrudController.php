@@ -32,6 +32,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -50,12 +51,13 @@ class UserCrudController extends AbstractCrudController
         $this->localisator = $localisator;
     }
     public function configureActions(Actions $actions): Actions
-    {
+    { 
+        //Custom action to send an email to a user through the user dashboard
+        $sendEmail = Action::new('sendEmail')->setIcon('fas fa-paper-plane')->setLabel(false)->linkToCrudAction('sendEmail')->setCssClass("text-primary");
         return $actions
-          
-            // ...
             ->add(Crud::PAGE_EDIT, Action::DELETE)
             ->add(Crud::PAGE_EDIT, Action::INDEX)   
+            ->add(Crud::PAGE_INDEX, $sendEmail)   
             ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE)
             ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action->setIcon('fas fa-trash')->setLabel(false);
@@ -72,8 +74,7 @@ class UserCrudController extends AbstractCrudController
            
             ->update(Crud::PAGE_EDIT, Action::DELETE, function (Action $action) {
                 return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
-            })
-            
+            }) 
             ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
                 return $action->setIcon('fas fa-save')->setLabel('Sauvegarder')->setCssClass('btn bg-black');
             })
@@ -86,7 +87,7 @@ class UserCrudController extends AbstractCrudController
             //->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
             ->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs')
-            ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );
+            ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );// Do not validate password on updating a user
     }
     public function configureFields(string $pageName): iterable
     {
@@ -111,8 +112,7 @@ class UserCrudController extends AbstractCrudController
                 'Actif'=>true,
                 'Inactif'=>false
             ])->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('email')->setFormTypeOptions(['validation_groups' => ['edit']]),
-            
+            TextField::new('email')->setFormTypeOptions(['validation_groups' => ['edit']]), 
             TextField::new('password')->onlyWhenCreating()->setFormType(PasswordType::class),
             TextField::new('address', 'Adresse')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
             IntegerField::new('zip_code', 'Code postal')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
@@ -121,7 +121,7 @@ class UserCrudController extends AbstractCrudController
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
     }
-
+    // On creation of a new user, we use the address to fetch coordinates on the API and hash the given password before persisting
     public function persistEntity(EntityManagerInterface $entityManager, $user):void
     {
         if (!($user instanceof User)) {
@@ -143,6 +143,7 @@ class UserCrudController extends AbstractCrudController
         $entityManager->persist($user);
         $entityManager->flush();   
     } 
+    // On updating a user, we use the updated address to fetch coordinates on the API before persisting
     public function updateEntity(EntityManagerInterface $entityManager, $user):void
     {
         if (!($user instanceof User)) {
@@ -165,5 +166,19 @@ class UserCrudController extends AbstractCrudController
        
         $entityManager->persist($user);
         $entityManager->flush();   
-    }    
+    } 
+       
+    public function sendEmail()
+    {
+        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
+
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('new')
+            ->unset(EA::ENTITY_ID)
+            ->set('id', $_GET['entityId'])
+            ->generateUrl();
+          
+        return $this->redirect($url);
+    }
 }

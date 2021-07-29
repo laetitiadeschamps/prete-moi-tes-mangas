@@ -7,6 +7,7 @@ use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -33,17 +34,22 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 
 class MessageCrudController extends AbstractCrudController
 {
-
     private $adminUrlGenerator;
+    private $userRepository;
+    private $chatRepository;
+    private $mailer;
 
-
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer )
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer, UserRepository $userRepository, ChatRepository $chatRepository)
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->userRepository = $userRepository;
+        $this->chatRepository = $chatRepository;
+        $this->mailer = $mailer;
     }
 
     public static function getEntityFqcn(): string
@@ -70,7 +76,7 @@ class MessageCrudController extends AbstractCrudController
         return [
             TextField::new('object', 'Objet')->onlyWhenCreating(),
             TextField::new('object', 'Objet')->OnlyOnIndex(),
-            AssociationField::new('author', 'Membre')->onlyWhenCreating(),
+            AssociationField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id']):null),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
@@ -81,7 +87,8 @@ class MessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Messagerie')
-            ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
+            ->setPageTitle('new', 'Créer un message')
+            //->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
 
@@ -229,8 +236,10 @@ class MessageCrudController extends AbstractCrudController
         $message->setStatus(false);
         $em->persist($message);
         $em->flush();
-
         return $this->redirect($url);
     }
+
+  
+   
 
 }

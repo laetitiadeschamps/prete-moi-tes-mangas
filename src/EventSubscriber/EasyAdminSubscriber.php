@@ -6,6 +6,7 @@ use App\Controller\Admin\MessageCrudController;
 
 use App\Entity\Message;
 use App\Repository\ChatRepository;
+use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
@@ -24,14 +25,16 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     private $adminUrlGenerator;
     private $mailer;
     private $chatRepository;
+    private $userRepository;
     
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer, ChatRepository $chatRepository)
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer, ChatRepository $chatRepository, UserRepository $userRepository)
     {
         
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->mailer = $mailer;
         $this->chatRepository = $chatRepository;
+        $this->userRepository=$userRepository;
      
     }
 
@@ -57,28 +60,33 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
     public function sendEmail(AfterEntityPersistedEvent $event)
     {
-        
         $entity = $event->getEntityInstance();
         if (!($entity instanceof Message)) {
             return;
         }
 
-    $email = (new TemplatedEmail())
-    
-    ->to(new Address($entity->getAuthor()->getEmail()))
-    ->subject('KASU Admin : vous avez reçu un message')
+        if(isset($_GET['id'])) {
+            $recipient = $this->userRepository->find($_GET['id']);
+        } else {
+            $recipient = $entity->getAuthor();
+        }
+        $email = (new TemplatedEmail())
+        
+        ->to(new Address($recipient->getEmail()))
+        ->subject('KASU Admin : vous avez reçu un message')
 
-    // path of the Twig template to render
-    ->htmlTemplate('emails/admin_message.html.twig')
+        // path of the Twig template to render
+        ->htmlTemplate('emails/admin_message.html.twig')
 
-    // pass variables (name => value) to the template
-    ->context([
-        'message'=> $entity,
-        'user' => $entity->getAuthor(),
-    ])
-;
-    $this->mailer->send($email);
+        // pass variables (name => value) to the template
+        ->context([
+            'message'=> $entity,
+            'user' => $recipient,
+        ])
+    ;
+        $this->mailer->send($email);
 
     }
+    
 
 }
