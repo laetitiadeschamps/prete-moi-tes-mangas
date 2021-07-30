@@ -77,6 +77,8 @@ class MessageCrudController extends AbstractCrudController
         return [
             TextField::new('object', 'Objet')->onlyWhenCreating(),
             TextField::new('object', 'Objet')->OnlyOnIndex(),
+            AssociationField::new('author', 'Membre')->onlyOnIndex(),
+            AssociationField::new('author', 'Membre')->onlyOnForms()->setFormTypeOption('disabled', 'disabled'),
             AssociationField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id']):null),
             TextareaField::new('content', 'Message'),
             BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
@@ -89,7 +91,7 @@ class MessageCrudController extends AbstractCrudController
         return $crud
             ->setPageTitle('index', 'Messagerie')
             ->setPageTitle('new', 'Créer un message')
-            //->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
+            ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
 
@@ -172,18 +174,13 @@ class MessageCrudController extends AbstractCrudController
         $em->flush();
 
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
-        $url = $adminUrlGenerator
-        ->setController(MessageCrudController::class)
-        ->setAction('new')
-        ->unset(EA::ENTITY_ID)
-        ->set('id', $_GET['entityId'])
-        ->generateUrl();
+  
 
-        // $url = $adminUrlGenerator
-        //     ->setController(MessageCrudController::class)
-        //     ->setAction('edit')
-        //     ->setEntityId($message->getId())
-        //     ->generateUrl();
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('edit')
+            ->setEntityId($message->getId())
+            ->generateUrl();
         return $this->redirect($url);
     }
  
