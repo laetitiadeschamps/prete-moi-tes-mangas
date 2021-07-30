@@ -101,7 +101,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"chats", "one-chat", "users"})
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $picture;
 
@@ -119,7 +119,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
      * )
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $zip_code;
 
@@ -180,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"users", "search"})
+     * @Groups({"users"})
      */
     private $volumes;
 
