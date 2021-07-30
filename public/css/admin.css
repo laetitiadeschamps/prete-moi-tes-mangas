@@ -60,8 +60,6 @@ body:not(.email)::before {
     max-width: 50px;
     max-height: none;
 }
-
-
 /* Fix btn-dark class not working */
 .bg-black {
     color: white;
