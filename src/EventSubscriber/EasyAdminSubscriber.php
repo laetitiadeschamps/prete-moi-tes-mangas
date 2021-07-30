@@ -41,7 +41,8 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            AfterEntityPersistedEvent::class => ['sendEmail'],
+            AfterEntityPersistedEvent::class => ['sendEmailNew'],
+            AfterEntityUpdatedEvent::class => ['sendEmailEdit'],
             BeforeEntityPersistedEvent::class =>['setChat']
         ];
     }
@@ -58,7 +59,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
        
     }
 
-    public function sendEmail(AfterEntityPersistedEvent $event)
+    public function sendEmailNew(AfterEntityPersistedEvent $event)
     {
         $entity = $event->getEntityInstance();
         if (!($entity instanceof Message)) {
@@ -70,6 +71,8 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         } else {
             $recipient = $entity->getAuthor();
         }
+
+        
         $email = (new TemplatedEmail())
         
         ->to(new Address($recipient->getEmail()))
@@ -87,6 +90,32 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         $this->mailer->send($email);
 
     }
+
+    public function sendEmailEdit(AfterEntityUpdatedEvent $event)
+    {
+        $entity = $event->getEntityInstance();
+        if (!($entity instanceof Message)) {
+            return;
+        }
+       
+        $email = (new TemplatedEmail())
+    
+        ->to(new Address($entity->getAuthor()->getEmail()))
+        ->subject('KASU Admin : vous avez reçu un message')
+
+        // path of the Twig template to render
+        ->htmlTemplate('emails/admin_message.html.twig')
+
+        // pass variables (name => value) to the template
+        ->context([
+        'message'=> $entity,
+        'user' => $entity->getAuthor(),
+        ]);
+
+        $this->mailer->send($email);
+
+    }
+
+    }
     
 
-}
