@@ -44,7 +44,7 @@ class SearchController extends AbstractController
             if ($user->getStatus() == 1 && $user->getHolidayMode() == false) {
                 $pseudo = $user->getPseudo();
 
-                $arrayResult[$pseudo]=["userId" => $user->getId()];
+                $arrayResult[$pseudo]=["user" => $user];
                 $arrayResult[$pseudo]["mangas"]=[];
 
                 foreach ($user->getVolumes() as $volume) {

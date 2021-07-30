@@ -17,6 +17,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Menu\CrudMenuItem;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -170,14 +171,19 @@ class MessageCrudController extends AbstractCrudController
         $em->persist($message);
         $em->flush();
 
-
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
-
         $url = $adminUrlGenerator
-            ->setController(MessageCrudController::class)
-            ->setAction('edit')
-            ->setEntityId($message->getId())
-            ->generateUrl();
+        ->setController(MessageCrudController::class)
+        ->setAction('new')
+        ->unset(EA::ENTITY_ID)
+        ->set('id', $_GET['entityId'])
+        ->generateUrl();
+
+        // $url = $adminUrlGenerator
+        //     ->setController(MessageCrudController::class)
+        //     ->setAction('edit')
+        //     ->setEntityId($message->getId())
+        //     ->generateUrl();
         return $this->redirect($url);
     }
  
@@ -223,6 +229,13 @@ class MessageCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param EntityManagerInterface $em
+     * @param AdminContext $context
+     * @return Response
+     */
     public function markAsNotTreated(EntityManagerInterface $em, AdminContext $context): Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
