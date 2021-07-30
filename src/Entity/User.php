@@ -180,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"users", "search"})
+     * @Groups({"users"})
      */
     private $volumes;
 
