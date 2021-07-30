@@ -63,10 +63,10 @@ class MangaCrudController extends AbstractCrudController
                 return $action->setCssClass('btn bg-black');
             })
             ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-                return $action->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger');
+                return $action->setIcon('fas fa-trash')->setLabel(false);
             })
             ->update(Crud::PAGE_DETAIL, Action::DELETE, function (Action $action) {
-                return $action->setIcon('fas fa-trash')->setLabel('Supprimer')->setCssClass('text-danger');
+                return $action->setIcon('fas fa-trash')->setLabel('Supprimer');
             })
             ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
                 return $action->setIcon('fas fa-eye')->setLabel(false)->setCssClass('text-dark');
