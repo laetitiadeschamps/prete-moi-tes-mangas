@@ -1,0 +1,138 @@
+{% apply inky_to_html|inline_css(source('@css/admin_mail.css')) %}
+<style type="text/css">
+	.header {
+		background: #8a8a8a;
+	}
+	.footer {
+		border-top: 1px solid grey;
+	}
+	.header .columns {
+		padding-bottom: 0;
+	}
+
+	.header p {
+		color: #fff;
+		margin-bottom: 0;
+	}
+
+	.header .wrapper-inner {
+		padding: 20px; /*controls the height of the header*/
+		border-bottom: 1px solid black;
+
+	}
+	.footer .wrapper-inner {
+		padding: 20px; /*controls the height of the header*/
+		border-top: 1px solid black;
+	}
+	.header .container {
+		background-color: #8a8a8a;
+	}
+
+	.wrapper.secondary {
+		background-color: #f3f3f3;
+	}
+	.header img {
+		max-height: 100px;
+	}
+	a {
+		text-decoration: none;
+		color: black;  !important
+	}
+	.w-25 {
+		width: 25%;
+	}
+	.logo {
+		width: 100%;
+	}
+	.main-header {
+		display: flex;
+		justify-content: space-between;
+		border-bottom: 1px solid grey;
+		margin-bottom: 2em;
+		align-items: center;
+		width: 100%;
+	}
+	.main-footer {
+		border-top: 1px solid grey;
+		padding: 2em;
+	}
+	.main-header h2 {
+		color: #d54028;
+	}
+	.message {
+		border: 1px solid grey;
+		border-radius: 5px;
+		padding: 1em;
+		width: 40%;
+		margin: 2em 0;
+		font-style: italic;
+	}
+
+	.greeting {
+		font-size: 1.5em;
+		padding-top: 1em;
+
+	}
+	.footer-text {
+		padding: 1em;
+		color: grey;
+		font-style: italic;
+		font-size: 0.8em;
+	}
+</style>
+
+<wrapper class="header" bgcolor="#8a8a8a">
+
+	<row class="collapse">
+		<columns small="6" valign="middle">
+			<img class="float-left" src="{{ email.image('@images/logo.png') }}" alt="Logo">
+		</columns>
+		<columns small="6" valign="middle">
+			<h3 class="text-left">Kasu, la plateforme pour les passionnés de manga.</h3>
+
+		</columns>
+	</row>
+
+</wrapper>
+<row>
+	<columns>
+		<center class="greeting">
+			Bonjour
+			{{ user.pseudo }}!
+		</center>
+	</columns>
+</row>
+
+<row>
+	<columns>
+		<center>Nous avons bien reçu votre demande, vous recevrez une réponse par mail sous les meilleurs délais.</center>
+		<center>
+			L'équipe de Kasu vous souhaite une bonne journée!
+		</center>
+
+
+	</columns>
+</row>
+
+
+<wrapper class="footer" bgcolor="#8a8a8a">
+
+	<row class="collapse">
+
+		<columns small="6" valign="middle">
+			<h6 class="text-center">Ce mail est un message automatique, merci de ne pas y répondre.</h6>
+			<p class="text-center">
+				<a class="alert" href="#">
+					<strong>Kasu © 2021</strong>
+				</a>
+				- Tous droits réservés.
+			</p>
+		</columns>
+
+
+	</row>
+
+</wrapper>
+
+{# ... #}
+{% endapply %}

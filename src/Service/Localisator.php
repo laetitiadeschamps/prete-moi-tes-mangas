@@ -70,6 +70,13 @@ class Localisator
      * @return void
      */
     protected function getCoordinates($array) {
+
+        if (!$array['features']){
+            return [
+                'error' => 'Le code postal n\'existe pas'
+            ];
+        }
+
         $long = $array['features'][0]['geometry']['coordinates'][0];
         $lat = $array['features'][0]['geometry']['coordinates'][1];
 

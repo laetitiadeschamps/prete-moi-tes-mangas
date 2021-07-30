@@ -3,7 +3,7 @@ body {
     position: relative;
     min-height: 100vh;
 }
-body::before {
+body:not(.email)::before {
     content:'';
     position: absolute;
     top:-100px;
@@ -77,4 +77,17 @@ body::before {
     border-radius: 15px;
 }
 
+/* messagerie */
+.datagrid td.actions .action-icon{
+    font-size: 18px;
+    padding-top:10px;
+}
+.badge-boolean-true {
+    background: var(--color-success)!important;
+}
 
+header span.kasu {
+  
+        color:#d54028;
+    
+}

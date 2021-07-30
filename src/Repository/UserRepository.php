@@ -97,6 +97,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getSingleResult()
         ;
     }
+    public function getActiveCount()
+    {
+        return $this->createQueryBuilder('user')
+            ->select('count(user.id) as count')
+            ->where('user.status = 1')
+            ->getQuery()
+            ->getSingleResult()
+        ;
+    }
 
 
     // /**

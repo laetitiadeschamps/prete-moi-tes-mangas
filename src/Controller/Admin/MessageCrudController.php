@@ -4,7 +4,10 @@ namespace App\Controller\Admin;
 
 use App\Entity\Chat;
 use App\Entity\Message;
+use App\Entity\User;
 use App\Repository\ChatRepository;
+use App\Repository\MessageRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -12,26 +15,49 @@ use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection as CollectionFil
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Menu\CrudMenuItem;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 
 class MessageCrudController extends AbstractCrudController
 {
+    private $adminUrlGenerator;
+    private $userRepository;
+    private $chatRepository;
+    private $mailer;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MessageRepository $messageRepository, MailerInterface $mailer, UserRepository $userRepository, ChatRepository $chatRepository)
+    {
+        $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->userRepository = $userRepository;
+        $this->chatRepository = $chatRepository;
+        $this->mailer = $mailer;
+    }
 
     public static function getEntityFqcn(): string
     {
         return Message::class;
     }
-
+    
     /**
      * method to override creationIndexQueryBuilder to get only ADMIN messages
      */
@@ -49,10 +75,13 @@ class MessageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('object', 'Objet'),
-            TextField::new('author', 'Auteur'),
+            TextField::new('object', 'Objet')->onlyWhenCreating(),
+            TextField::new('object', 'Objet')->OnlyOnIndex(),
+            AssociationField::new('author', 'Membre')->onlyOnIndex(),
+            AssociationField::new('author', 'Membre')->onlyOnForms()->setFormTypeOption('disabled', 'disabled'),
+            AssociationField::new('author', 'Membre')->onlyWhenCreating()->setFormTypeOption('data', isset($_GET['id'])?$this->userRepository->find($_GET['id']):null),
             TextareaField::new('content', 'Message'),
-            BooleanField::new('status', 'Traité')->renderAsSwitch(),
+            BooleanField::new('status', 'Traité')->renderAsSwitch(false)->hideOnForm(),
             DateField::new('created_at', 'Date de réception')->hideOnForm(),
         ];
     }
@@ -61,46 +90,113 @@ class MessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Messagerie')
+            ->setPageTitle('new', 'Créer un message')
+            ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
 
     public function configureActions(Actions $actions): Actions
     {
 
+
+        $markAsNotTreated = Action::new("marquer comme non-traité")->linkToCrudAction('markAsNotTreated')->setIcon("fas fa-backward")->setLabel(false)->setCssClass('text-dark')->displayIf(static function ($entity) {
+            //if status is true, message is readen
+            return $entity->getStatus();
+        });
+
+
         //Action when status is true (="traité")
-        $archive = Action::new('Archiver')->setIcon('fas fa-trash')->setLabel(false)->linkToCrudAction('archive')
+        $archive = Action::new('archiver')->setIcon('fas fa-trash')->setLabel(false)->setCssClass('text-danger')->linkToCrudAction('archive')
             ->displayIf(static function ($entity) {
+                //if status is true, message is read and can ben archived
                 return $entity->getStatus();
             });
-        
-        
-        $answer = Action::new('Répondre')->setIcon('fas fa-reply')->setLabel(false)->linkToCrudAction('answer')
-        ->displayIf(static function ($entity) {
-            
-            return !$entity->getStatus();
 
+
+        $editMail = Action::new('répondre')->setIcon('fas fa-paper-plane')->setLabel(false)->linkToCrudAction("editMail")->setCssClass("text-primary")
+            ->displayIf(static function ($entity) {
+                //if status is false, message is unread
+                return !$entity->getStatus();
+            });
+
+        $markAsTreated = Action::new("Marquer comme traité")->linkToCrudAction('markAsTreated')->setIcon("fas fa-clipboard-check")->setLabel(false)->setCssClass('text-success')->displayIf(static function ($entity) {
+            //if status is false, message is unread
+            return !$entity->getStatus();
         });
-        return $actions->remove(Crud::PAGE_INDEX, Action::DELETE)
-                ->add(Crud::PAGE_INDEX, $archive)
-                ->add(Crud::PAGE_INDEX, $answer)
-                ->remove(Crud::PAGE_INDEX, Action::EDIT)
-                ;
+
+
+        return $actions
+            ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ->remove(Crud::PAGE_INDEX, Action::EDIT)
+            ->add(Crud::PAGE_INDEX, $archive)
+            ->add(Crud::PAGE_INDEX, $editMail)
+            ->add(Crud::PAGE_INDEX, $markAsTreated)
+            ->add(Crud::PAGE_INDEX, $markAsNotTreated)
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
+            })
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
+            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, function (Action $action) {
+                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
+            })
+            ->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER)
+            ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, function (Action $action) {
+                return $action->setIcon('fas fa-paper-plane')->setLabel('Envoyez un message')->setCssClass('btn bg-black');
+            })
+            ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
     }
 
+    /**
+     * method to create a new response admin message
+     *
+     * @param EntityManagerInterface $em
+     * @param AdminContext $context
+     * @return void
+     */
+    public function editMail(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository)
+    {
+        $message = new Message();
 
-    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository) :Response
+        $userToReplyTo = $context->getEntity()->getInstance()->getAuthor();
+        $message->setAuthor($userToReplyTo);
+        $message->setContent("  ");
+
+        $chat = $chatRepository->findOneBy(["title" => "RESPONSE"]);
+
+        if (!$chat) {
+            $chat = new Chat();
+            $chat->setTitle("RESPONSE");
+            $em->persist($chat);
+            $em->flush();
+        }
+        $message->setChat($chat);
+        $em->persist($message);
+        $em->flush();
+
+        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
+  
+
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('edit')
+            ->setEntityId($message->getId())
+            ->generateUrl();
+        return $this->redirect($url);
+    }
+ 
+    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository): Response
     {
         $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
 
         $url = $adminUrlGenerator
-        ->setController(MessageCrudController::class)
-        ->setAction('index')
-        ->generateUrl();
+            ->setController(MessageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
 
         $message = $context->getEntity()->getInstance();
-        $chat = $chatRepository->findOneBy(["title"=>"ARCHIVE"]);
-        
-        if (!$chat){
+        $chat = $chatRepository->findOneBy(["title" => "ARCHIVE"]);
+
+        if (!$chat) {
             $chat = new Chat();
             $chat->setTitle("ARCHIVE");
             $em->persist($chat);
@@ -109,9 +205,51 @@ class MessageCrudController extends AbstractCrudController
         $message->setChat($chat);
         $em->persist($message);
         $em->flush();
-        
+
         return $this->redirect($url);
     }
 
+    public function markAsTreated(EntityManagerInterface $em, AdminContext $context): Response
+    {
+        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
+
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        $message = $context->getEntity()->getInstance();
+        $message->setStatus(true);
+        $em->persist($message);
+        $em->flush();
+
+        return $this->redirect($url);
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param EntityManagerInterface $em
+     * @param AdminContext $context
+     * @return Response
+     */
+    public function markAsNotTreated(EntityManagerInterface $em, AdminContext $context): Response
+    {
+        $adminUrlGenerator = $this->get(AdminUrlGenerator::class);
+
+        $url = $adminUrlGenerator
+            ->setController(MessageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        $message = $context->getEntity()->getInstance();
+        $message->setStatus(false);
+        $em->persist($message);
+        $em->flush();
+        return $this->redirect($url);
+    }
+
+  
+   
 
 }

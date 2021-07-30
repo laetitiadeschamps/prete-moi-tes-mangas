@@ -35,6 +35,28 @@ class MessageRepository extends ServiceEntityRepository
                     ->getQuery()
                     ->getOneOrNullResult();
     }
+
+        // /**
+    //  * @return Manga[] Returns an array of Message f
+    //  */
+    
+    public function getUnreadCount()
+    {
+        return $this->createQueryBuilder('m')
+            ->select('count(m.id) as count')
+            ->where('m.status = 0')
+            ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ADMIN')
+            ->getQuery()
+            ->getSingleResult();
+    }  
+    public function getArchiveCount()
+    {
+        return $this->createQueryBuilder('m')
+            ->select('count(m.id) as count')
+            ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ARCHIVE')
+            ->getQuery()
+            ->getSingleResult();
+    } 
     // /**
     //  * @return Message[] Returns an array of Message objects
     //  */

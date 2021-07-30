@@ -22,7 +22,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    private UrlGeneratorInterface $urlGenerator;
+    private $urlGenerator;
 
     public function __construct(UrlGeneratorInterface $urlGenerator)
     {
@@ -34,7 +34,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $pseudo = $request->request->get('pseudo', '');
 
         $request->getSession()->set(Security::LAST_USERNAME, $pseudo);
-        
+      
         return new Passport(
             
             new UserBadge($pseudo),
@@ -61,4 +61,4 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
-}
+} 

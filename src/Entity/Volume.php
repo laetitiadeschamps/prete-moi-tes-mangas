@@ -149,6 +149,6 @@ class Volume
     }
     public function __toString()
     {
-       return $this->number;
+       return strval($this->number);
     }
 }
