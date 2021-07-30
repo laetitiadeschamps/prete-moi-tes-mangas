@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Migrations\Query\Query;
+use Doctrine\ORM\Query as ORMQuery;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -105,6 +107,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getSingleResult()
         ;
+    }
+    public function findContactForProfile(int $id) {
+
+        return $this->createQueryBuilder('user')
+        ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
+        ->where('user.id = :id')
+        ->setParameter(':id', $id)
+        ->getQuery()
+        ->getSingleResult();
     }
 
 

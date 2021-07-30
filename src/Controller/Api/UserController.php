@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Entity\UserVolume;
 use App\Form\UserType;
 use App\Repository\ChatRepository;
 use App\Repository\UserRepository;
@@ -55,6 +56,7 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $security->getUser();
         $contact = $this->userRepository->find($id);
+        $contactForDisplay = $this->userRepository->findContactForProfile($id);
         // If the id is not on of an existing user, we throw an error
         if(!$contact) {
             return $this->json(
@@ -64,8 +66,18 @@ class UserController extends AbstractController
         }
         // We build an array that contains on the one hand the user's infos and on the other hand the chat between the user and the logged in user. Returns null if no chat found
         $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
-        $infos['contact'] = $contact;
+      
+        $infos['contact'] = $contactForDisplay;
+     
+        foreach($contact->getVolumes() as $volume) {
+           
+            $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['info']=$volume->getVolume()->getManga();
+            $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['volumes'][]=['status'=> $volume->getStatus(), 'number'=>$volume->getVolume()->getNumber()];
+            //$infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['volumes'][]['number']=$volume->getVolume()->getNumber();
+        }
+        
         $infos['chat'] = $chat;
+
        
         return $this->json($infos, 200, [], [
             'groups' => 'users'
