@@ -95,7 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $description;
 
@@ -132,7 +132,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $holiday_mode;
 
@@ -196,7 +196,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->volumes = new ArrayCollection();
         $this->picture = $this->randomString();
     }
-    
+    public function getPictureUrl()
+    {
+        return  $this->getPicture() ? 'https://api.multiavatar.com/'. $this->getPicture().'.svg' : 'https://api.multiavatar.com/kasu.svg';
+    }
     public function getId(): ?int
     {
         return $this->id;

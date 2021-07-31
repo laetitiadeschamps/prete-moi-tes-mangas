@@ -92,7 +92,7 @@ class DashboardController extends AbstractDashboardController
             ->setName($user->getPseudo())
             // use this method if you don't want to display the name of the user
 
-            ->setAvatarUrl($user->getPicture())
+            ->setAvatarUrl('https://api.multiavatar.com/' . $user->getPicture() . '.png')
 
             ->setMenuItems( [MenuItem::linkToLogout('__ea__user.sign_out', '')->setCssClass('logout')]);
             

@@ -33,6 +33,9 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
+use EasyCorp\Bundle\EasyAdminBundle\Config\UserMenu;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -89,6 +92,7 @@ class UserCrudController extends AbstractCrudController
             ->setPageTitle('index', 'Les utilisateurs')
             ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );// Do not validate password on updating a user
     }
+   
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -96,6 +100,7 @@ class UserCrudController extends AbstractCrudController
             TextField::new('pseudo')->setFormTypeOptions(['validation_groups' => ['edit']]),
             TextField::new('firstname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
             TextField::new('lastname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            ImageField::new('pictureUrl', 'Avatar')->hideOnForm(),
             ChoiceField::new('roles')
                 ->setLabel("Role")
                 ->setChoices([ 
