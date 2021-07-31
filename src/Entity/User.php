@@ -95,7 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $description;
 
@@ -132,7 +132,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $holiday_mode;
 
