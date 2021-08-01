@@ -139,9 +139,10 @@ class ChatController extends AbstractController
         $chat->addUser($otherUser);
         $this->em->persist($chat);
         $this->em->flush();
-
+        $id = $chat->getId();
         return $this->json(
             [
+                'id'=>$id,
                 'message' => 'La conversation a bien été créée'
             ],
             201
