@@ -65,7 +65,12 @@ class UserController extends AbstractController
             );
         }
         // We build an array that contains on the one hand the user's infos and on the other hand the chat between the user and the logged in user. Returns null if no chat found
-        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
+        if($user == $contact) {
+            $chat = null;
+        } else {
+            $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
+        }
+        
       
         $infos['contact'] = $contactForDisplay;
      
