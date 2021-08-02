@@ -76,8 +76,16 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkToCrud('Mangas', 'fas fa-book', Manga::class);
-        yield MenuItem::linkToCrud('Messagerie', 'far fa-envelope', Message::class);
         yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-user-friends', User::class);
+        yield MenuItem::section('Messagerie');
+        yield MenuItem::linkToCrud('Boîte de réception', 'far fa-envelope', Message::class)
+        ->setController(MessageCrudController::class);
+        yield MenuItem::linkToCrud('Réponses envoyées', 'fas fa-paper-plane', Message::class)
+        ->setController(SentMessageCrudController::class);
+        yield MenuItem::linkToCrud('Demandes archivées', 'fas fa-trash', Message::class)
+        ->setController(ArchiveMessageCrudController::class);
+        ;
+
        
     }
 
