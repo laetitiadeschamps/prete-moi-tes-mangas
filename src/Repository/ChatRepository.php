@@ -22,11 +22,11 @@ class ChatRepository extends ServiceEntityRepository
 
     /**
      * method to get all chats of a user
-     *
-     * @param [type] $id of user
-     * @return void
+     * @param integer $id
+     * @return array chats
      */
-    public function findAllByUser($id){
+    public function findAllByUser(int $id): array
+    {
         return $this->createQueryBuilder('c')
             ->andWhere(':id MEMBER OF c.users')
             ->setParameter(':id', $id)
@@ -37,26 +37,34 @@ class ChatRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-  
-   
     /**
-     * method to get one chat from one user with all users and messages related to
      *
+     * method to get one chat from one user with all users and messages related to
+     * @param integer $chatId
+     * @return mixed
      */
-    public function findOneWithMessages($chatId){
-       
+    public function findOneWithMessages(int $chatId): mixed
+    {
+
         return $this->createQueryBuilder('c')
             ->where('c.id = :id')
             ->setParameter(':id', $chatId)
             ->leftJoin('c.messages', 'm', 'WITH', 'm.chat=c.id')
-            
             ->addSelect('m')
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    public function getChatIdFromUsers($userId, $contactId){
-       
+    /**
+     * method to get the chat of 2 users
+     *
+     * @param integer $userId
+     * @param integer $contactId
+     * @return mixed
+     */
+    public function getChatIdFromUsers(int $userId, int $contactId): mixed
+    {
+
         return $this->createQueryBuilder('chat')
             ->join('chat.users', 'users')
             ->where(':userId MEMBER OF chat.users')
@@ -65,14 +73,9 @@ class ChatRepository extends ServiceEntityRepository
             ->setParameter(':contactId', $contactId)
             ->getQuery()
             ->getOneOrNullResult();
-
     }
-    // /**
-    //  * @return Chat[] Returns an array of Chat objects
-    //  */
-    /*
 
-    
+    /*
     public function findByExampleField($value)
     {
         return $this->createQueryBuilder('c')

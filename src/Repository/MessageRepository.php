@@ -19,44 +19,54 @@ class MessageRepository extends ServiceEntityRepository
         parent::__construct($registry, Message::class);
     }
 
+
     /**
      * method to get the last message of one chat
      *
-     * @param [type] $chatId
-     * @return void
+     * @param integer $chatId
+     * @return mixed
      */
-    public function getLastMessage($chatId){
+    public function getLastMessage(int $chatId): mixed
+    {
 
         return $this->createQueryBuilder('m')
-                    ->where('m.chat = :chatId')
-                    ->setParameter(':chatId', $chatId)
-                    ->orderBy('m.created_at', 'DESC')
-                    ->setMaxResults(1)
-                    ->getQuery()
-                    ->getOneOrNullResult();
+            ->where('m.chat = :chatId')
+            ->setParameter(':chatId', $chatId)
+            ->orderBy('m.created_at', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
-        // /**
-    //  * @return Manga[] Returns an array of Message f
-    //  */
-    
-    public function getUnreadCount()
+
+    /**
+     * method to get the count of unread messages received by admins
+     *
+     * @return array
+     */
+    public function getUnreadCount(): array
     {
         return $this->createQueryBuilder('m')
             ->select('count(m.id) as count')
-            ->where('m.status = 0')
+            ->where('m.status = 3')
             ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ADMIN')
             ->getQuery()
             ->getSingleResult();
-    }  
-    public function getArchiveCount()
+    }
+
+    /**
+     * method to get the count of archived messages
+     *
+     * @return array
+     */
+    public function getArchiveCount(): array
     {
         return $this->createQueryBuilder('m')
             ->select('count(m.id) as count')
-            ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :admin')->setParameter(':admin', 'ARCHIVE')
+            ->innerJoin('m.chat', 'c', 'WITH', 'c.title LIKE :archive')->setParameter(':archive', 'ARCHIVE')
             ->getQuery()
             ->getSingleResult();
-    } 
+    }
     // /**
     //  * @return Message[] Returns an array of Message objects
     //  */
