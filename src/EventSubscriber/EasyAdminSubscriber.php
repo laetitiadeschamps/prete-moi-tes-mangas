@@ -47,6 +47,12 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * method to set chat Response if you create a message from easyAdmin
+     *
+     * @param BeforeEntityPersistedEvent $event
+     * @return void
+     */
     public function setChat(BeforeEntityPersistedEvent $event)
     {
         $entity = $event->getEntityInstance();
@@ -59,7 +65,13 @@ class EasyAdminSubscriber implements EventSubscriberInterface
        
     }
 
-    public function sendEmailNew(AfterEntityPersistedEvent $event)
+    /**
+     * method to send email when you create a new message admin to a member
+     *
+     * @param AfterEntityPersistedEvent $event
+     * @return void
+     */
+    public function sendEmailNew(AfterEntityPersistedEvent $event): void
     {
         $entity = $event->getEntityInstance();
         if (!($entity instanceof Message)) {
@@ -85,13 +97,19 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         ->context([
             'message'=> $entity,
             'user' => $recipient,
-        ])
-    ;
+        ]);
+    
         $this->mailer->send($email);
 
     }
 
-    public function sendEmailEdit(AfterEntityUpdatedEvent $event)
+    /**
+     * method to send email when admin answer to a member
+     *
+     * @param AfterEntityUpdatedEvent $event
+     * @return void
+     */
+    public function sendEmailEdit(AfterEntityUpdatedEvent $event): void
     {
         $entity = $event->getEntityInstance();
         if (!($entity instanceof Message)) {
