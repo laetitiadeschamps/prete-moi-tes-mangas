@@ -5,6 +5,8 @@ use App\Repository\UserRepository;
 use App\Service\Localisator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+
 
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -21,12 +23,17 @@ class SearchController extends AbstractController
         $this->em = $em;
     }
 
+
     /**
-     * @Route("/api/v1/search/{zipcode}", name="search", requirements={"zipcode"="^[0-9]{5}$"}, methods={"GET"})
+     * Method to get all users and their collections living within 30km of the zipcode
      *
-     * @return void
+     * @Route("/api/v1/search/{zipcode}", name="search", requirements={"zipcode"="^[0-9]{5}$"}, methods={"GET"})
+     * @param string $zipcode
+     * @param Localisator $localisator
+     * @param UserRepository $userRepository
+     * @return Response
      */
-    public function byPostCode($zipcode, Localisator $localisator, UserRepository $userRepository)
+    public function byPostCode(string $zipcode, Localisator $localisator, UserRepository $userRepository): Response
     {
         $coordinates = $localisator->gpsByZipcode($zipcode);
         extract($coordinates);
