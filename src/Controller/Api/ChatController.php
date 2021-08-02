@@ -121,14 +121,14 @@ class ChatController extends AbstractController
     }
 
     /**
-     * Method to create a chat if it doesn't exist already
+     * Method to create a chat if it doesn't exist already and return the id of the chat if it does
      *
-     * @Route("/chat", name="create", methods="POST")
+     * @Route("/chat", name="createOrGet", methods="POST")
      * @param Request $request
      * @param integer $id userId
      * @return Response
      */
-    public function create(Request $request,int $id): Response
+    public function createOrGet(Request $request,int $id): Response
     {
 
         $user = $this->userRepository->find($id);
@@ -146,16 +146,24 @@ class ChatController extends AbstractController
             );
         }
 
+        // If there is already a chat between both users, we return the chat id, else we create one
+        /** @var Chat $chat */
+        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $otherUser->getId());
+        if($chat) {
+            $id = $chat->getId();
+        }
+        else {
+            $chat = new Chat();
+            $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
+            $chat->setTitle($title);
+            $chat->addUser($user);
+            $chat->addUser($otherUser);
+            $this->em->persist($chat);
+            $this->em->flush();
 
-        $chat = new Chat();
-        $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
-        $chat->setTitle($title);
-        $chat->addUser($user);
-        $chat->addUser($otherUser);
-        $this->em->persist($chat);
-        $this->em->flush();
-
-        $id = $chat->getId();
+            $id = $chat->getId();
+        }
+        
         return $this->json(
             [
                 'id'=>$id,
