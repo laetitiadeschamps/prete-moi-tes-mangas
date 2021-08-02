@@ -39,6 +39,8 @@ class MangaController extends AbstractController
     }
     /**
      * Method allowing to fetch all mangas
+     * @param void
+     * @return Response
      * @Route("/manga", name="list", methods={"GET"})
      */
     public function list(): Response
@@ -49,6 +51,8 @@ class MangaController extends AbstractController
     }
     /**
      * Method allowing to add a manga into a user's collection
+     * @param integer $id
+     * @return Response
      * @Route("/user/{id}/manga", name="add", methods={"POST"})
      */
     public function add(int $id, Request $request): Response
@@ -61,7 +65,25 @@ class MangaController extends AbstractController
                 ['error' => 'Ce manga n\'existe pas'], 500
             );
         }
+        $user = $this->userRepository->find($id);
+        //if manga already in collection, we return an error
+        $isInCollection = false; 
+        $mangas = [];
+        foreach($user->getVolumes() as $volume) {
+            if(!in_array($volume->getVolume()->getManga()->getId(), $mangas)) {
+                $mangas[]=$volume->getVolume()->getManga()->getId();
+            }   
+        }
+        if(in_array($manga->getId(), $mangas)) {
+            $isInCollection = true;
+        }
+        if($isInCollection) {
+            return $this->json(
+                ['error' => 'Ce manga est déjà dans votre collection'], 400
+            );
+        }
         $volumes = $this->volumeRepository->findSelectedVolumes($manga->getId(),$jsonArray['volumes']);
+      
         if(!$volumes) {
             return $this->json(
                 ['error' => 'Il doit y avoir au moins un volume pour ce manga'], 500
@@ -70,7 +92,7 @@ class MangaController extends AbstractController
         //Then, for each selected volume, we create a new volumeUser relation, between the current user and the current volume
         foreach($volumes as $volume) {
             $user_volume = new UserVolume();
-            $user_volume->setUser($this->userRepository->find($id));
+            $user_volume->setUser($user);
             $user_volume->setVolume($volume);
             $this->em->persist($user_volume);
         }
@@ -79,6 +101,9 @@ class MangaController extends AbstractController
     }
     /**
     * Method allowing to update volumes owned for a manga into a user's collection
+    * @param integer $id
+    * @param integer $mangaId
+    * @return Response
     * @Route("/user/{id}/manga/{mangaId}", name="update", methods={"PUT|PATCH"})
     */
     public function update(int $id, int $mangaId, Request $request): Response
@@ -117,6 +142,9 @@ class MangaController extends AbstractController
     }
     /**
      * Method allowing to update availability of volumes owned for a manga in a user's collection
+     * @param integer $id
+     * @param integer $mangaId
+     * @return Response
      * @Route("/user/{id}/manga/{mangaId}/availability", name="availability", methods={"PUT|PATCH"})
      */
     public function availability(int $id, int $mangaId, Request $request): Response
@@ -147,6 +175,9 @@ class MangaController extends AbstractController
     }
     /**
      * Method allowing to delete all volumes of a manga from a user's collection
+     * @param integer $id
+     * @param integer $mangaId
+     * @return Response
      * @Route("/user/{id}/manga/{mangaId}", name="delete", methods={"DELETE"})
      */
     public function delete(int $id, int $mangaId): Response
