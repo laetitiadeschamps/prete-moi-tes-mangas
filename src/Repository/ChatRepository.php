@@ -23,9 +23,9 @@ class ChatRepository extends ServiceEntityRepository
     /**
      * method to get all chats of a user
      * @param integer $id
-     * @return array chats
+     * @return Chat[] an array of chats
      */
-    public function findAllByUser(int $id): array
+    public function findAllByUser(int $id)
     {
         return $this->createQueryBuilder('c')
             ->andWhere(':id MEMBER OF c.users')
