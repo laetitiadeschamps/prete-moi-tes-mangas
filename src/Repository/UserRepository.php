@@ -129,7 +129,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * @param integer $id
      * @return User
      */
-    public function findContactForProfile(int $id) : User
+    public function findContactForProfile(int $id)
     { 
         return $this->createQueryBuilder('user')
             ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
