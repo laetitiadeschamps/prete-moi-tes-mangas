@@ -64,7 +64,7 @@ class ChatController extends AbstractController
         $chats = $this->chatRepository->findAllByUser($id);
 
         //fetching the last message of each conversation
-
+        $messageArray =[];
         foreach ($chats as $chat) {
             $messageArray[$chat->getId()]['chat'] = $chat;
             $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());

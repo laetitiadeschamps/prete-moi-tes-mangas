@@ -82,7 +82,7 @@ class UserController extends AbstractController
             $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['info']=$volume->getVolume()->getManga();
             $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['volumes'][]=['status'=> $volume->getStatus(), 'number'=>$volume->getVolume()->getNumber()];
         }
-        ksort($infos['contact']['manga']); 
+        isset($infos['contact']['manga']) ? ksort($infos['contact']['manga']):''; 
         $infos['chat'] = $chat;   
         return $this->json($infos, 200, [], [
             'groups' => 'users'
