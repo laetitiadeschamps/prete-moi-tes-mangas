@@ -69,6 +69,7 @@ class MangaController extends AbstractController
         //if manga already in collection, we return an error
         $isInCollection = false; 
         $mangas = [];
+
         foreach($user->getVolumes() as $volume) {
             if(!in_array($volume->getVolume()->getManga()->getId(), $mangas)) {
                 $mangas[]=$volume->getVolume()->getManga()->getId();

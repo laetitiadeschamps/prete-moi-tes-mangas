@@ -19,7 +19,11 @@ class UserVolumeRepository extends ServiceEntityRepository
         parent::__construct($registry, UserVolume::class);
     }
 
-    public function getAvailableCount()
+    /**
+     * Method to get the number of available volumes to lend on the website
+     * @return array
+     */
+    public function getAvailableCount() : array
     {
         return $this->createQueryBuilder('volume')
             ->select('count(volume.id) as count')

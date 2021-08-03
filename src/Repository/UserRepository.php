@@ -39,8 +39,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-
-    public function search($latitude, $longitude)
+    /**
+     * Method to search users in a 30 kms radius
+     * @param float $latitude
+     * @param float $longitude
+     * @return Users[]
+     */
+    public function search(float $latitude, float $longitude)
     {
         // name of the current table
         $table = $this->getClassMetadata()->table["name"];
@@ -80,6 +85,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $stmt->getResult();
     }
 
+    /**
+     * Method to find users that are Admin
+     * @return User[]
+     */
     public function findAdmin() {
         $role = 'ROLE_ADMIN';
         return $this->createQueryBuilder('user')
@@ -91,7 +100,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ->getResult();
     }
 
-    public function getCityCount()
+    /**
+     * Method to get the number of cities where there is at least one user
+     * @return array
+     */
+    public function getCityCount() : array
     {
         return $this->createQueryBuilder('user')
             ->select('count(DISTINCT user.city) as count')
@@ -99,7 +112,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getSingleResult()
         ;
     }
-    public function getActiveCount()
+
+    /**
+     * Method to get the number of active users
+     * @return array
+     */
+    public function getActiveCount() : array
     {
         return $this->createQueryBuilder('user')
             ->select('count(user.id) as count')
@@ -108,8 +126,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getSingleResult()
         ;
     }
-    public function findContactForProfile(int $id) {
 
+    /**
+     * Method to get the number of active users
+     * @param integer $id
+     * @return User
+     */
+    public function findContactForProfile(int $id) : User
+    { 
         return $this->createQueryBuilder('user')
         ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
         ->where('user.id = :id')

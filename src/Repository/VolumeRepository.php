@@ -19,25 +19,35 @@ class VolumeRepository extends ServiceEntityRepository
         parent::__construct($registry, Volume::class);
     }
 
-    public function findSelectedVolumes($mangaId, $volumes)
+    /**
+     * Method to get array of volumes from their ids
+     * @param integer $mangaId
+     * @param string $volumes
+     * @return Volume[]
+     */
+    public function findSelectedVolumes(int $mangaId, string $volumes)
     {
-
         $qb = $this->createQueryBuilder('volume')->where('volume.number IN (' . $volumes . ')')->andWhere('volume.manga = :manga')->setParameter(':manga', $mangaId);
         $query = $qb->getQuery();
-
         return $query->getResult();
     }
-    public function search($users)
-    {
-        foreach ($users as $user) {
-            $userIds[] = $user->getId();
-        }
-        $userIds = implode(", ", $userIds);
-        $qb = $this->createQueryBuilder('volume')->join('volume.users', 'users')->addSelect('users')->where('users');
-        $query = $qb->getQuery();
+    // /**
+    //  * Undocumented function
+    //  *
+    //  * @param array $users
+    //  * @return Volume
+    //  */
+    // public function search(array $users)
+    // {
+    //     foreach ($users as $user) {
+    //         $userIds[] = $user->getId();
+    //     }
+    //     $userIds = implode(", ", $userIds);
+    //     $qb = $this->createQueryBuilder('volume')->join('volume.users', 'users')->addSelect('users')->where('users');
+    //     $query = $qb->getQuery();
 
-        return $query->getResult();
-    }
+    //     return $query->getResult();
+    // }
 
     
 
