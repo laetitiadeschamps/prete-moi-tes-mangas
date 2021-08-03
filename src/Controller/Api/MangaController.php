@@ -174,16 +174,20 @@ class MangaController extends AbstractController
         $volumes = $manga->getVolumes();
         // We retrieve volume numbers given as available as per request
         $jsonArray = json_decode($request->getContent(), true);
-        $volumesAvailable = $this->volumeRepository->findSelectedVolumes($mangaId,$jsonArray['volumes']);
+        if($jsonArray['volumes']) {
+            $volumesAvailable = $this->volumeRepository->findSelectedVolumes($mangaId,$jsonArray['volumes']);
+        } else {
+            $volumesAvailable = [];
+        }
         //We loop through all volumes of the manga, if there is an entry for the current user in the userVolume table, we set its status according to whether or not it appears in the volumes available
         foreach ($volumes as $volume) {
             $user_volume = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
             if($user_volume && in_array($volume, $volumesAvailable)) {
-               $user_volume->setStatus(true);
+                $user_volume->setStatus(true);
             } elseif($user_volume && !in_array($volume, $volumesAvailable)) {
                 $user_volume->setStatus(false);
             }    
-        }  
+        } 
         $this->em->flush();
         return $this->json("Vos disponibilités pour le manga ". $manga->getTitle() ." ont bien été mises à jour", 200);   
     }
