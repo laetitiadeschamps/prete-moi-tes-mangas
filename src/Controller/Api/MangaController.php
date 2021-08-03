@@ -138,15 +138,18 @@ class MangaController extends AbstractController
         $volumes = $manga->getVolumes();
         //We remove all volumes of the collection from the current user's collection
         foreach ($volumes as $volume) {
-          $user_volume = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
-          $user_volume ? $this->em->remove($user_volume):'';
+            $user_volume = $this->userVolume->findOneBy(['user'=>$user, 'volume'=>$volume]);
+            $user_volume ? $legacyVolumes[$user_volume->getVolume()->getId()]=$user_volume->getStatus():'';
+            $user_volume ? $this->em->remove($user_volume):'';
         }
+      
         //Then we add only selected volumes to the user's collection
         foreach($volumesOwned as $volumeOwned) {
-          $user_volume = new UserVolume();
-          $user_volume->setUser($user);
-          $user_volume->setVolume($volumeOwned);
-          $this->em->persist($user_volume);
+            $user_volume = new UserVolume();
+            $user_volume->setUser($user);
+            isset($legacyVolumes[$volumeOwned->getId()]) ? $user_volume->setStatus($legacyVolumes[$volumeOwned->getId()]):$user_volume->setStatus(true);
+            $user_volume->setVolume($volumeOwned);
+            $this->em->persist($user_volume);
         }
         $this->em->flush();
         return $this->json("Le manga ". $manga->getTitle() ." a bien été mis à jour", 200); 
