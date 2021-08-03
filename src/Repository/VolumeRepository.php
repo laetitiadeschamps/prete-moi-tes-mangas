@@ -19,6 +19,7 @@ class VolumeRepository extends ServiceEntityRepository
         parent::__construct($registry, Volume::class);
     }
 
+    
     public function findSelectedVolumes($mangaId, $volumes)
     {
 
@@ -27,6 +28,7 @@ class VolumeRepository extends ServiceEntityRepository
 
         return $query->getResult();
     }
+
     public function search($users)
     {
         foreach ($users as $user) {

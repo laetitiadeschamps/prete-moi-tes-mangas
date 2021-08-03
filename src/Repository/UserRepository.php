@@ -44,10 +44,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         // name of the current table
         $table = $this->getClassMetadata()->table["name"];
-       
+
         //sql query with haversine formula to get all users within 30km of the coordinates points
         $sql = "SELECT u.* "
-        .",(
+            . ",(
             6371 *
             acos(cos(radians(:lat)) * 
             cos(radians(u.latitude)) * 
@@ -56,12 +56,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             sin(radians(:lat)) * 
             sin(radians(u.latitude)))
             ) AS distance "
-        ."FROM " . $table . " AS u "
-        ."LEFT JOIN user_volume AS uservolume "
-        ."ON u.id = uservolume.user_id "
-        ."HAVING distance < 30 "
-        ."ORDER BY distance; "
-        ;
+            . "FROM " . $table . " AS u "
+            . "LEFT JOIN user_volume AS uservolume "
+            . "ON u.id = uservolume.user_id "
+            . "HAVING distance < 30 "
+            . "ORDER BY distance; ";
 
         // mapping of the user entity to get object datas
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
@@ -80,15 +79,16 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $stmt->getResult();
     }
 
-    public function findAdmin() {
+    public function findAdmin()
+    {
         $role = 'ROLE_ADMIN';
         return $this->createQueryBuilder('user')
-        
-        ->where('user.roles LIKE :role')
-        ->setParameter(':role', "%$role%")
-        
-        ->getQuery()
-        ->getResult();
+
+            ->where('user.roles LIKE :role')
+            ->setParameter(':role', "%$role%")
+
+            ->getQuery()
+            ->getResult();
     }
 
     public function getCityCount()
@@ -96,8 +96,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('user')
             ->select('count(DISTINCT user.city) as count')
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
     public function getActiveCount()
     {
@@ -105,17 +104,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->select('count(user.id) as count')
             ->where('user.status = 1')
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
-    public function findContactForProfile(int $id) {
+    public function findContactForProfile(int $id)
+    {
 
         return $this->createQueryBuilder('user')
-        ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
-        ->where('user.id = :id')
-        ->setParameter(':id', $id)
-        ->getQuery()
-        ->getSingleResult();
+            ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
+            ->where('user.id = :id')
+            ->setParameter(':id', $id)
+            ->getQuery()
+            ->getSingleResult();
     }
 
 
