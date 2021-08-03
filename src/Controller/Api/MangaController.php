@@ -58,6 +58,16 @@ class MangaController extends AbstractController
     public function add(int $id, Request $request): Response
     {
         $jsonArray = json_decode($request->getContent(), true);
+        if(!isset($jsonArray['title'])) {
+            return $this->json(
+                ['error' => 'Le titre du manga est absent'], 400
+            );
+        }
+        if(!isset($jsonArray['volumes'])) {
+            return $this->json(
+                ['error' => 'La liste des volumes possédés n\'existe pas'], 400
+            );
+        }
         //We find the manga that was selected and its attached volumes   
         $manga = $this->mangaRepository->findOneBy(['title'=>$jsonArray['title']]);
         if(!$manga) {
