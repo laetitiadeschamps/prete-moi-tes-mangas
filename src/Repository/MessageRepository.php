@@ -24,9 +24,9 @@ class MessageRepository extends ServiceEntityRepository
      * method to get the last message of one chat
      *
      * @param integer $chatId
-     * @return mixed
+     * @return Message
      */
-    public function getLastMessage(int $chatId): mixed
+    public function getLastMessage(int $chatId): ?Message
     {
 
         return $this->createQueryBuilder('m')

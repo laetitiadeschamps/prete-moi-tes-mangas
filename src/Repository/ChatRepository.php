@@ -41,9 +41,9 @@ class ChatRepository extends ServiceEntityRepository
      *
      * method to get one chat from one user with all users and messages related to
      * @param integer $chatId
-     * @return mixed
+     * @return Chat
      */
-    public function findOneWithMessages(int $chatId): mixed
+    public function findOneWithMessages(int $chatId): ?Chat
     {
 
         return $this->createQueryBuilder('c')
@@ -60,9 +60,9 @@ class ChatRepository extends ServiceEntityRepository
      *
      * @param integer $userId
      * @param integer $contactId
-     * @return mixed
+     * @return Chat
      */
-    public function getChatIdFromUsers(int $userId, int $contactId): mixed
+    public function getChatIdFromUsers(int $userId, int $contactId): ?Chat
     {
 
         return $this->createQueryBuilder('chat')
