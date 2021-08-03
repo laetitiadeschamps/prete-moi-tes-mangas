@@ -165,6 +165,7 @@ class ChatController extends AbstractController
         return $this->json(
             [
                 'id'=>$id,
+                'users'=>$chat->getUsers(),
                 'message' => 'La conversation a bien été créée'
             ],
             201
