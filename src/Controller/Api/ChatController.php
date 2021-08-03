@@ -130,9 +130,7 @@ class ChatController extends AbstractController
      */
     public function createOrGet(Request $request,int $id): Response
     {
-
-        $user = $this->userRepository->find($id);
-        
+        $user = $this->userRepository->find($id); 
         //getting second user
         $jsonData = $request->toArray();
         $otherUserId = $jsonData['other_user'];

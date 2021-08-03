@@ -21,11 +21,12 @@ class MangaRepository extends ServiceEntityRepository
     }
 
    
-    // /**
-    //  * @return Manga[] Returns an array of Manga objects
-    //  */
+    /**
+    * Method to get the number of mangas in the database
+    * @return array
+    */
     
-    public function getCount()
+    public function getCount() : array
     {
         return $this->createQueryBuilder('manga')
             ->select('count(manga.id) as count')

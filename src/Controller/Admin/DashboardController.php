@@ -47,8 +47,8 @@ class DashboardController extends AbstractDashboardController
     public function index(): Response
     {
         //return parent::index();
-       
-        $mangas = $this->mangaRepository->getCount()['count']; 
+     
+;        $mangas = $this->mangaRepository->getCount()['count']; 
         $cities = $this->userRepository->getCityCount()['count'];
         $volumes = $this->userVolumeRepository->getAvailableCount()['count'];
         $users = $this->userRepository->getActiveCount()['count'];
