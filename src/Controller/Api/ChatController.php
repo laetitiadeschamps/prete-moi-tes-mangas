@@ -16,6 +16,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -158,14 +159,17 @@ class ChatController extends AbstractController
             $chat->addUser($otherUser);
             $this->em->persist($chat);
             $this->em->flush();
-
-            $id = $chat->getId();
+            $id = $chat->getId();     
         }
-        
+        $users=[];
+        foreach($chat->getUsers() as $user) {
+            $users[$user->getId()]=$user->getPicture();
+        }
+
         return $this->json(
             [
                 'id'=>$id,
-                'users'=>$chat->getUsers(),
+                'users'=>$users,
                 'message' => 'La conversation a bien été créée'
             ],
             201
