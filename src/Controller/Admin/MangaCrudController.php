@@ -78,7 +78,7 @@ class MangaCrudController extends AbstractCrudController
         return $crud
             ->setPageTitle('new', 'Ajouter un manga')
             ->setPageTitle('index', 'Mes mangas')
-            ->setPageTitle('detail', fn (Manga $manga) => sprintf($manga->getTitle()))
+            //->setPageTitle('detail', fn (Manga $manga) => sprintf($manga->getTitle()))
             ->setSearchFields(['title', 'author']);
     }
     public function configureFilters(Filters $filters): Filters
