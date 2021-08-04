@@ -64,8 +64,7 @@ class ChatRepository extends ServiceEntityRepository
      */
     public function getChatIdFromUsers(int $userId, int $contactId): ?Chat
     {
-
-        return $this->createQueryBuilder('chat')
+                return $this->createQueryBuilder('chat')
             ->join('chat.users', 'users')
             ->where(':userId MEMBER OF chat.users')
             ->andWhere(':contactId MEMBER OF chat.users')
