@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Manga;
 use App\Entity\UserVolume;
+use App\Entity\User;
 use App\Repository\MangaRepository;
 use App\Repository\UserRepository;
 use App\Repository\UserVolumeRepository;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -28,14 +30,16 @@ class MangaController extends AbstractController
     private $em;
     private $userRepository;
     private $userVolume;
+    private $security;
 
-    public function __construct(MangaRepository $mangaRepository, VolumeRepository $volumeRepository, UserVolumeRepository $userVolume, UserRepository $userRepository, EntityManagerInterface $em)
+    public function __construct(MangaRepository $mangaRepository, VolumeRepository $volumeRepository, UserVolumeRepository $userVolume, UserRepository $userRepository, EntityManagerInterface $em, Security $security)
     {
         $this->mangaRepository = $mangaRepository;
         $this->volumeRepository = $volumeRepository;
         $this->userRepository = $userRepository;
         $this->em=$em;
         $this->userVolume = $userVolume;
+        $this->security=$security;
     }
     /**
      * Method allowing to fetch all mangas
@@ -57,6 +61,13 @@ class MangaController extends AbstractController
      */
     public function add(int $id, Request $request): Response
     {
+        /** @var User */
+        $tokenUser = $this->security->getUser();
+        if($id != $tokenUser->getId()) {
+            return $this->json(
+                ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+            );
+        }
         $jsonArray = json_decode($request->getContent(), true);
         if(!isset($jsonArray['title'])) {
             return $this->json(
@@ -119,6 +130,14 @@ class MangaController extends AbstractController
     */
     public function update(int $id, int $mangaId, Request $request): Response
     {
+
+        /** @var User */
+        $tokenUser = $this->security->getUser();
+        if($id != $tokenUser->getId()) {
+            return $this->json(
+                ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+            );
+        }
         $manga = $this->mangaRepository->find($mangaId);
         if(!$manga) {
             return $this->json(
@@ -168,6 +187,13 @@ class MangaController extends AbstractController
      */
     public function availability(int $id, int $mangaId, Request $request): Response
     {   
+        /** @var User */
+        $tokenUser = $this->security->getUser();
+        if($id != $tokenUser->getId()) {
+            return $this->json(
+                ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+            );
+        }
         //We find the manga that was selected and its attached volumes
         $manga = $this->mangaRepository->find($mangaId);
         if(!$manga) {
@@ -175,6 +201,7 @@ class MangaController extends AbstractController
                 ['error' => 'Ce manga n\'existe pas'], 500
             );
         }
+        $jsonArray = json_decode($request->getContent(), true);
         if(!isset($jsonArray['volumes'])) {
             return $this->json(
                 ['error' => 'La liste des volumes possédés n\'existe pas'], 400
@@ -183,7 +210,7 @@ class MangaController extends AbstractController
         $user = $this->userRepository->find($id);
         $volumes = $manga->getVolumes();
         // We retrieve volume numbers given as available as per request
-        $jsonArray = json_decode($request->getContent(), true);
+       
         if($jsonArray['volumes']) {
             $volumesAvailable = $this->volumeRepository->findSelectedVolumes($mangaId,$jsonArray['volumes']);
         } else {
@@ -210,6 +237,13 @@ class MangaController extends AbstractController
      */
     public function delete(int $id, int $mangaId): Response
     {
+        /** @var User */
+        $tokenUser = $this->security->getUser();
+        if($id != $tokenUser->getId()) {
+            return $this->json(
+                ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+            );
+        }
         //We find the manga that was selected and its attached volumes   
         $manga = $this->mangaRepository->find($mangaId);
         if(!$manga) {

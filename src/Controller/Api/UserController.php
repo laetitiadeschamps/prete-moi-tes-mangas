@@ -35,8 +35,9 @@ class UserController extends AbstractController
     private $userVolumeRepository;
     private $chatRepository;
     private $mailer;
+    private $security;
 
-    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
+    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, Security $security, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -46,6 +47,7 @@ class UserController extends AbstractController
         $this->userVolumeRepository = $userVolumeRepository;
         $this->chatRepository = $chatRepository;
         $this->mailer = $mailer;
+        $this->security=$security;
     }
     /**
      * Method to see a user's profile (the logged in user or any other user)
@@ -99,6 +101,13 @@ class UserController extends AbstractController
      */
     public function update(User $user, Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
+         /** @var User */
+         $tokenUser = $this->security->getUser();
+         if($user != $tokenUser) {
+             return $this->json(
+                 ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+             );
+         }
         //We decode de JSON input to check if the password has been changed
         $jsonArray = json_decode($request->getContent(), true);
         $needsHash = false;
@@ -124,7 +133,7 @@ class UserController extends AbstractController
         }
         if(isset($jsonArray['password'])) {
               //We validate the inputs according to our constraints       
-                $errors = $this->validator->validate($user);
+                $errors = $this->validator->validate($user, null, ['add']);
         } else {
             //We validate the inputs according to our constraints
             $errors = $this->validator->validate($user, null, ['update']);
@@ -166,6 +175,7 @@ class UserController extends AbstractController
         $JsonData = $request->getContent();
         $user = new User();
         $this->serializer->deserialize($JsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+      
         // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
         $jsonArray = json_decode($request->getContent(), true);
         if(isset($jsonArray['zip_code'])) {
@@ -173,7 +183,8 @@ class UserController extends AbstractController
         }
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
+       
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()?$user->getAddress():'error', $user->getZipCode()?$user->getZipCode():'error');
         extract($coordinates);
         //if an error in Localisator is returned :
         $zipCodeError = null;
@@ -184,13 +195,13 @@ class UserController extends AbstractController
             $user->setLongitude($longitude);
         }
         $user->setRoles(['ROLE_USER']);
-        //We validate the inputs according to our constraints
-        $errors = $this->validator->validate($user);
+        //We validate the inputs according to our constraints for the add group
+        $errors = $this->validator->validate($user, null, ['add']);
         //If there are any errors, we send back a list of errors (reformatted for clearer output)
         if ($zipCodeError ||count($errors) > 0) {
             $errorslist = array();
             if($zipCodeError) {
-                $errorslist['zip_code']=$zipCodeError;
+                $errorslist['localisator']=$zipCodeError;
             }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
