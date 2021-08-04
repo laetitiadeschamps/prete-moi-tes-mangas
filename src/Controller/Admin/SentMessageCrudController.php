@@ -55,7 +55,7 @@ class SentMessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Réponses envoyées')
-            //->setPageTitle('detail', fn (Message $message) => sprintf('Message envoyé :'))
+            ->setPageTitle('detail', fn (Message $message) => sprintf('Message envoyé :'))
             ;
     }
     
