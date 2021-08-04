@@ -272,8 +272,6 @@ class ChatController extends AbstractController
      */
     public function contactAdmin(Request $request, ValidatorInterface $validator,int $id): Response
     {
-
-
         $author = $this->userRepository->find($id);
         $admins = $this->userRepository->findAdmin();
 
