@@ -54,7 +54,7 @@ class ArchiveMessageCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('index', 'Demandes archivées')
-            //->setPageTitle('detail', fn (Message $message) => sprintf('Message archivé :'))
+            ->setPageTitle('detail', fn (Message $message) => sprintf('Message archivé :'))
             ;
     }
 
