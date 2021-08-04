@@ -78,8 +78,8 @@ class ChatController extends AbstractController
 
     /**
      * method to get one chat of a user
-     *
      * @Route("/chat/{chatId}", name="details", methods="GET")
+     *
      * @param integer $id
      * @param integer $chatId
      * @return Response
@@ -134,6 +134,14 @@ class ChatController extends AbstractController
         $user = $this->userRepository->find($id); 
         //getting second user
         $jsonData = $request->toArray();
+
+
+        if (!isset($jsonData['other_user'])){
+            return $this->json(
+                ['error' => 'Les données transmises ne sont pas valides'],
+                400
+            );
+        }
         $otherUserId = $jsonData['other_user'];
         $otherUser = $this->userRepository->find($otherUserId);
 
@@ -146,6 +154,7 @@ class ChatController extends AbstractController
         }
 
         // If there is already a chat between both users, we return the chat id, else we create one
+
         /** @var Chat $chat */
         $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $otherUser->getId());
         if($chat) {
@@ -203,6 +212,7 @@ class ChatController extends AbstractController
 
         //getting datas
         $jsonData = $request->getContent();
+       
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
 
@@ -282,8 +292,8 @@ class ChatController extends AbstractController
                 404
             );
         }
+        
         //We want to create a chat and relate it to the user and all admins.
-
 
         $chatAdmin = $this->chatRepository->findOneBy(["title" => "ADMIN"]);
 
@@ -304,6 +314,15 @@ class ChatController extends AbstractController
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
 
+        //object cannot be null on contact-admin
+        if ($message->getObject() == null) {
+            return $this->json(
+                [
+                    'error' => 'L\'objet doit être renseigné'
+                ],
+                400
+            );
+        }
         $errors = $validator->validate($message);
 
         //errorArray to send to front useful messages of error (instead of ConstraintViolationListInterface)
@@ -323,6 +342,7 @@ class ChatController extends AbstractController
                 500
             );
         }
+        
 
         $message->setAuthor($author);
         $message->setChat($chatAdmin);
