@@ -151,7 +151,7 @@ class EasyAdminSubscriber implements EventSubscriberInterface
             $message = "Votre message pour " . $entity->getAuthor()->getPseudo() ." a bien été envoyé !";
         }
         if ($entity instanceof User) {
-            $message = "L'utilisateur" . $entity->getPseudo() ." a bien été créé !";
+            $message = "L'utilisateur " . $entity->getPseudo() ." a bien été créé !";
         }
         if ($entity instanceof Manga) {
             $message = "Le manga " . $entity->getTitle() . " et ses tomes ont bien été créés !";

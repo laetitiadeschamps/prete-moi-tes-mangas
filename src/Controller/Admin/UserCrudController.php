@@ -87,7 +87,7 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('new', 'Ajouter un utilisateur')
-            ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            //->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
             ->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs')
             ->setFormOptions( ['validation_groups' => ['add']], ['validation_groups' => ['update']] );// Do not validate password on updating a user
@@ -132,22 +132,31 @@ class UserCrudController extends AbstractCrudController
         if (!($user instanceof User)) {
             return;
         }
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()?$user->getAddress():'error', $user->getZipCode()?$user->getZipCode():'error');
         extract($coordinates);
-        
-        $user->setLatitude($latitude);
-        $user->setLongitude($longitude);
-        $pass = $user->getPassword();
-
-        $user->setPassword(
+      
+        if (isset($error)) {
+        //    $newForm->addError('error');
+                //     $url = $this->adminUrlGenerator
+                //     ->setController(UserCrudController::class)
+                //     ->setAction('index')
+                //     ->generateUrl();
+                //     return $this->redirect($url);
+                
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
+            $pass = $user->getPassword();
+            $user->setPassword(
             $this->passwordEncoder->hashPassword(
                 $user,
                 $pass
             )
         );
-        // $this->addFlash('success', 'L\'utilisateur ' . $user->getPseudo() . ' a bien été créé');
+      
         $entityManager->persist($user);
         $entityManager->flush();   
+    }
     } 
     // On updating a user, we use the updated address to fetch coordinates on the API before persisting
     public function updateEntity(EntityManagerInterface $entityManager, $user):void
@@ -172,7 +181,7 @@ class UserCrudController extends AbstractCrudController
        
         $entityManager->persist($user);
         $entityManager->flush();  
-        // $this->addFlash('success', 'L\'utilisateur ' . $user->getPseudo() . ' a bien été mis à jour'); 
+       
     } 
     public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
