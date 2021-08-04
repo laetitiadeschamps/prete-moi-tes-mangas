@@ -90,16 +90,16 @@ class UserCrudController extends AbstractCrudController
             ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
             ->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs')
-            ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );// Do not validate password on updating a user
+            ->setFormOptions( ['validation_groups' => ['add']], ['validation_groups' => ['update']] );// Do not validate password on updating a user
     }
    
     public function configureFields(string $pageName): iterable
     {
         return [
             IdField::new('id')->hideOnForm(),
-            TextField::new('pseudo')->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('firstname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('lastname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('pseudo'),
+            TextField::new('firstname')->hideOnIndex(),
+            TextField::new('lastname')->hideOnIndex(),
             ImageField::new('pictureUrl', 'Avatar')->hideOnForm(),
             ChoiceField::new('roles')
                 ->setLabel("Role")
@@ -110,18 +110,18 @@ class UserCrudController extends AbstractCrudController
                         ->allowMultipleChoices(true)
                         ->renderExpanded(true)
                         ->setFormType(ChoiceType::class)
-                        ->setFormTypeOptions(['validation_groups' => ['edit']])
+                        
                        ,           
-            BooleanField::new('status', 'Actif')->onlyOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            BooleanField::new('status', 'Actif')->onlyOnIndex(),
             ChoiceField::new('status', 'Actif')->onlyOnForms()->setChoices([
                 'Actif'=>true,
                 'Inactif'=>false
-            ])->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('email')->setFormTypeOptions(['validation_groups' => ['edit']]), 
+            ]),
+            TextField::new('email'), 
             TextField::new('password')->onlyWhenCreating()->setFormType(PasswordType::class),
-            TextField::new('address', 'Adresse')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            IntegerField::new('zip_code', 'Code postal')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('city', 'Ville')->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('address', 'Adresse')->hideOnIndex(),
+            IntegerField::new('zip_code', 'Code postal')->hideOnIndex(),
+            TextField::new('city', 'Ville'),
             AssociationField::new('volumes')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
