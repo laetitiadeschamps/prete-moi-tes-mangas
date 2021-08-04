@@ -26,8 +26,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
-
-
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class MessageCrudController extends AbstractCrudController
 {
@@ -205,7 +205,7 @@ class MessageCrudController extends AbstractCrudController
      * @param ChatRepository $chatRepository
      * @return Response
      */
-    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository): Response
+    public function archive(EntityManagerInterface $em, AdminContext $context, ChatRepository $chatRepository, FlashBagInterface $flashBagInterface): Response
     {
 
         $url = $this->adminUrlGenerator
@@ -225,6 +225,7 @@ class MessageCrudController extends AbstractCrudController
         $message->setChat($chat);
         $em->persist($message);
         $em->flush();
+        $this->flashBagInterface->add('success', "Le message a bien été archivé !");
 
         return $this->redirect($url);
     }

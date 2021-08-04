@@ -92,3 +92,7 @@ header span.kasu {
         color:#d54028;
     
 }
+
+#flash-messages .alert {
+    text-align: center;
+}

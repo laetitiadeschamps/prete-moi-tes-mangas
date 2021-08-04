@@ -127,6 +127,11 @@ class MangaController extends AbstractController
         }
         // We check if there is at least one manga in the request, then we fetch the volumes corresponding to the numbers sent
         $jsonArray = json_decode($request->getContent(), true);
+        if(!isset($jsonArray['volumes'])) {
+            return $this->json(
+                ['error' => 'La liste des volumes possédés n\'existe pas'], 400
+            );
+        }
         if(!$jsonArray['volumes']) {
             return $this->json(
                 ['error' => 'Il doit y avoir au moins un volume pour ce manga'], 500
@@ -168,6 +173,11 @@ class MangaController extends AbstractController
         if(!$manga) {
             return $this->json(
                 ['error' => 'Ce manga n\'existe pas'], 500
+            );
+        }
+        if(!isset($jsonArray['volumes'])) {
+            return $this->json(
+                ['error' => 'La liste des volumes possédés n\'existe pas'], 400
             );
         }
         $user = $this->userRepository->find($id);

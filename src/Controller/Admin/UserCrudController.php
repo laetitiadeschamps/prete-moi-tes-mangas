@@ -145,6 +145,7 @@ class UserCrudController extends AbstractCrudController
                 $pass
             )
         );
+        // $this->addFlash('success', 'L\'utilisateur ' . $user->getPseudo() . ' a bien été créé');
         $entityManager->persist($user);
         $entityManager->flush();   
     } 
@@ -167,11 +168,18 @@ class UserCrudController extends AbstractCrudController
         // }
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
-        dd($user);
+     
        
         $entityManager->persist($user);
-        $entityManager->flush();   
+        $entityManager->flush();  
+        // $this->addFlash('success', 'L\'utilisateur ' . $user->getPseudo() . ' a bien été mis à jour'); 
     } 
+    public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $entityManager->remove($entityInstance);
+        $entityManager->flush();
+        //$this->addFlash('success', 'L\'utilisateur ' . $entityInstance->getPseudo() . ' a bien été supprimé'); 
+    }
        
     public function sendEmail()
     {

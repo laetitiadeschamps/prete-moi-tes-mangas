@@ -3,11 +3,13 @@
 namespace App\EventSubscriber;
 
 use App\Controller\Admin\MessageCrudController;
-
+use App\Entity\Manga;
 use App\Entity\Message;
+use App\Entity\User;
 use App\Repository\ChatRepository;
 use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityUpdatedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
@@ -15,9 +17,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class EasyAdminSubscriber implements EventSubscriberInterface
 {
@@ -26,15 +32,17 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     private $mailer;
     private $chatRepository;
     private $userRepository;
+    private $flashBagInterface;
     
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer, ChatRepository $chatRepository, UserRepository $userRepository)
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, MailerInterface $mailer, ChatRepository $chatRepository, UserRepository $userRepository, FlashBagInterface $flashBagInterface)
     {
         
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->mailer = $mailer;
         $this->chatRepository = $chatRepository;
         $this->userRepository=$userRepository;
+        $this->flashBagInterface = $flashBagInterface;
      
     }
 
@@ -42,7 +50,10 @@ class EasyAdminSubscriber implements EventSubscriberInterface
     {
         return [
             AfterEntityPersistedEvent::class => ['sendEmailNew'],
+            AfterEntityPersistedEvent::class => ['flashMessageAfterPersist'],
             AfterEntityUpdatedEvent::class => ['sendEmailEdit'],
+            AfterEntityUpdatedEvent::class => ['flashMessageAfterUpdate'],
+            AfterEntityDeletedEvent::class => ['flashMessageAfterDelete'],
             BeforeEntityPersistedEvent::class =>['setChat']
         ];
     }
@@ -132,6 +143,50 @@ class EasyAdminSubscriber implements EventSubscriberInterface
 
         $this->mailer->send($email);
 
+    }
+    public function flashMessageAfterPersist(AfterEntityPersistedEvent $event): void
+    {
+        $entity = $event->getEntityInstance();
+        if ($entity instanceof Message) {
+            $message = "Votre message pour " . $entity->getAuthor()->getPseudo() ." a bien été envoyé !";
+        }
+        if ($entity instanceof User) {
+            $message = "L'utilisateur" . $entity->getPseudo() ." a bien été créé !";
+        }
+        if ($entity instanceof Manga) {
+            $message = "Le manga " . $entity->getTitle() . " et ses tomes ont bien été créés !";
+        }
+        $this->flashBagInterface->add('success', $message);
+    }
+
+    public function flashMessageAfterUpdate(AfterEntityUpdatedEvent $event): void
+    {
+        $entity = $event->getEntityInstance();
+        if ($entity instanceof Message) {
+            $message = "Votre réponse pour l\'utilisateur " . $entity->getAuthor()->getPseudo() . "a bien été envoyée !";
+        }
+        if ($entity instanceof User) {
+            $message = "L'utilisateur" . $entity->getPseudo() . "a bien été mis à jour !";
+        }
+        if ($entity instanceof Manga) {
+            return;
+        }
+        $this->flashBagInterface->add('success', $message);
+    }
+
+    public function flashMessageAfterDelete(AfterEntityDeletedEvent $event): void
+    {
+        $entity = $event->getEntityInstance();
+        if ($entity instanceof Message) {
+            $message = "Le message a bien été supprimé !";
+        }
+        if ($entity instanceof User) {
+            $message = "L'utilisateur " . $entity->getPseudo() . " a bien été supprimé !";
+        }
+        if ($entity instanceof Manga) {
+            $message = "Le manga " . $entity->getTitle() . " a bien été supprimé !";
+        }
+        $this->flashBagInterface->add('success', $message);
     }
 
     }
