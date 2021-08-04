@@ -67,7 +67,7 @@ class Localisator
      * method to transform array response from API in coordinates
      *
      * @param [type] $array
-     * @return void
+     * @return array
      */
     protected function getCoordinates($array) {
 
