@@ -99,7 +99,7 @@ class MessageCrudController extends AbstractCrudController
         return $crud
             ->setPageTitle('index', 'Messagerie')
             ->setPageTitle('new', 'Créer un message')
-            ->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
+            //->setPageTitle('edit', fn (Message $message) => sprintf('Répondre à <b>%s</b> :', $message->getAuthor()->getPseudo()))
             ->setSearchFields(['object', 'author', 'content']);
     }
 
