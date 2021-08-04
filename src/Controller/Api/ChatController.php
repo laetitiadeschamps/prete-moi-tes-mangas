@@ -8,6 +8,7 @@ use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,9 +33,10 @@ class ChatController extends AbstractController
     protected $em;
     protected $serializer;
     private $mailer;
+    private $security;
 
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
+    public function __construct(Security $security, SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
     {
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
@@ -42,6 +44,7 @@ class ChatController extends AbstractController
         $this->em = $em;
         $this->serializer = $serializer;
         $this->mailer = $mailer;
+        $this->security = $security;
     }
 
 
@@ -129,13 +132,23 @@ class ChatController extends AbstractController
      * @param integer $id userId
      * @return Response
      */
-    public function createOrGet(Request $request,int $id): Response
+    public function createOrGet(Request $request, int $id): Response
     {
+        
+        $loggedUser = $this->security->getUser();
         $user = $this->userRepository->find($id); 
+        
+        //security check
+        if ($loggedUser !== $user){
+            return $this->json(
+                ['error' => 'Vous n\'avez pas la permission nécessaire pour accéder à ce contenu.'],
+                403
+            );
+        }
         //getting second user
         $jsonData = $request->toArray();
 
-
+        // if json sent bad or inexistent key
         if (!isset($jsonData['other_user'])){
             return $this->json(
                 ['error' => 'Les données transmises ne sont pas valides'],
@@ -145,8 +158,8 @@ class ChatController extends AbstractController
         $otherUserId = $jsonData['other_user'];
         $otherUser = $this->userRepository->find($otherUserId);
 
-        //if they don't exist
-        if (!$user || !$otherUser) {
+        //if they don't exist or are the same 
+        if (!$user || !$otherUser || $user == $otherUser) {
             return $this->json(
                 ['error' => 'La ressource demandée n\'existe pas'],
                 404
@@ -179,9 +192,8 @@ class ChatController extends AbstractController
             [
                 'id'=>$id,
                 'users'=>$users,
-                'message' => 'La conversation a bien été créée'
             ],
-            201
+            200
         );
     }
 
