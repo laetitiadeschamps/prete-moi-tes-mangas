@@ -373,7 +373,7 @@ class ChatController extends AbstractController
 
             // pass variables (name => value) to the template
             ->context([
-
+                'message' => $message,
                 'user' => $author,
             ]);
         $this->mailer->send($email);
