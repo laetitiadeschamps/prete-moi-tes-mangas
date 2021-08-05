@@ -225,7 +225,7 @@ class MessageCrudController extends AbstractCrudController
         $message->setChat($chat);
         $em->persist($message);
         $em->flush();
-        $this->flashBagInterface->add('success', "Le message a bien été archivé !");
+        //$flashBagInterface->add('success', "Le message a bien été archivé !");
 
         return $this->redirect($url);
     }
