@@ -8,6 +8,7 @@ use App\Repository\ChatRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -31,9 +33,10 @@ class ChatController extends AbstractController
     protected $em;
     protected $serializer;
     private $mailer;
+    private $security;
 
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
+    public function __construct(Security $security, SerializerInterface $serializer, UserRepository $userRepository, EntityManagerInterface $em, MessageRepository $messageRepository, ChatRepository $chatRepository, MailerInterface $mailer)
     {
         $this->userRepository = $userRepository;
         $this->chatRepository = $chatRepository;
@@ -41,14 +44,18 @@ class ChatController extends AbstractController
         $this->em = $em;
         $this->serializer = $serializer;
         $this->mailer = $mailer;
+        $this->security = $security;
     }
+
 
     /**
      * method to fetch all chats of a user
-     * @Route("/chat", name="list", methods="GET")
      *
+     * @Route("/chat", name="list", methods="GET")
+     * @param int $id user Id
+     * @return Response
      */
-    public function list($id): Response
+    public function list(int $id): Response
     {
         if (!$this->userRepository->find($id)) {
             return $this->json(
@@ -61,7 +68,7 @@ class ChatController extends AbstractController
         $chats = $this->chatRepository->findAllByUser($id);
 
         //fetching the last message of each conversation
-
+        $messageArray =[];
         foreach ($chats as $chat) {
             $messageArray[$chat->getId()]['chat'] = $chat;
             $messageArray[$chat->getId()]['lastmessage'] = $this->messageRepository->getLastMessage($chat->getId());
@@ -75,8 +82,12 @@ class ChatController extends AbstractController
     /**
      * method to get one chat of a user
      * @Route("/chat/{chatId}", name="details", methods="GET")
+     *
+     * @param integer $id
+     * @param integer $chatId
+     * @return Response
      */
-    public function details(int $id, $chatId)
+    public function details(int $id, int $chatId): Response
     {
         
         $user = $this->userRepository->find($id);
@@ -114,44 +125,88 @@ class ChatController extends AbstractController
     }
 
     /**
-     * @Route("/chat", name="create", methods="POST")
+     * Method to create a chat if it doesn't exist already and return the id of the chat if it does
+     *
+     * @Route("/chat", name="createOrGet", methods="POST")
+     * @param Request $request
+     * @param integer $id userId
+     * @return Response
      */
-    public function create(Request $request, $id)
+    public function createOrGet(Request $request, int $id): Response
     {
-
-
+        
+        $loggedUser = $this->security->getUser();
+        $user = $this->userRepository->find($id); 
+        
+        //security check
+        if ($loggedUser !== $user){
+            return $this->json(
+                ['error' => 'Vous n\'avez pas la permission nécessaire pour accéder à ce contenu.'],
+                403
+            );
+        }
+        //getting second user
         $jsonData = $request->toArray();
+
+        // if json sent bad or inexistent key
+        if (!isset($jsonData['other_user'])){
+            return $this->json(
+                ['error' => 'Les données transmises ne sont pas valides'],
+                400
+            );
+        }
         $otherUserId = $jsonData['other_user'];
-        $user = $this->userRepository->find($id);
         $otherUser = $this->userRepository->find($otherUserId);
 
-        if (!$user || !$otherUser) {
+        //if they don't exist or are the same 
+        if (!$user || !$otherUser || $user == $otherUser) {
             return $this->json(
                 ['error' => 'La ressource demandée n\'existe pas'],
                 404
             );
         }
 
-        $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
-        $chat = new Chat();
-        $chat->setTitle($title);
-        $chat->addUser($user);
-        $chat->addUser($otherUser);
-        $this->em->persist($chat);
-        $this->em->flush();
+        // If there is already a chat between both users, we return the chat id, else we create one
+
+        /** @var Chat $chat */
+        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $otherUser->getId());
+        if($chat) {
+            $id = $chat->getId();
+        }
+        else {
+            $chat = new Chat();
+            $title = $user->getPseudo() . " - " . $otherUser->getPseudo();
+            $chat->setTitle($title);
+            $chat->addUser($user);
+            $chat->addUser($otherUser);
+            $this->em->persist($chat);
+            $this->em->flush();
+            $id = $chat->getId();     
+        }
+        $users=[];
+        foreach($chat->getUsers() as $user) {
+            $users[$user->getId()]=$user->getPicture();
+        }
 
         return $this->json(
             [
-                'message' => 'La conversation a bien été créée'
+                'id'=>$id,
+                'users'=>$users,
             ],
-            201
+            200
         );
     }
+
     /**
-     * Method to add a message from a user in a chat
+     * Method to add a message from a user in a existing chat
      * @Route("/chat/{chatId}/message", name="add", methods="POST")
+     * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param integer $id
+     * @param integer $chatId
+     * @return Response
      */
-    public function add(Request $request, ValidatorInterface $validator, $id, $chatId)
+    public function add(Request $request, ValidatorInterface $validator,int $id, int $chatId): Response
     {
 
         //first, i get the concerned chat
@@ -159,16 +214,19 @@ class ChatController extends AbstractController
         // then the concerned user
         $author = $this->userRepository->find($id);
 
+        //if they don't exist
         if (!$chat || !$author) {
             return $this->json(
                 ['error' => 'La ressource demandée n\'existe pas'],
                 404
             );
         }
+
+        //getting datas
         $jsonData = $request->getContent();
+       
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
-
 
         $message->setAuthor($author);
         $message->setChat($chat);
@@ -194,7 +252,6 @@ class ChatController extends AbstractController
             );
         } else {
 
-
             $this->em->persist($message);
             $this->em->flush();
 
@@ -208,7 +265,7 @@ class ChatController extends AbstractController
                 }
             }
 
-
+            //sending email to notify a new message 
             $email = (new TemplatedEmail())
                 ->to($recipient->getEmail())
                 ->subject('Nouveau message !')
@@ -226,14 +283,17 @@ class ChatController extends AbstractController
         }
     }
 
+
     /**
      * Method to create a conversation with an admin through the contact form
      * @Route("/contact-admin", name="contactAdmin", methods="POST")
+     * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param integer $id User
+     * @return Response
      */
-    public function contactAdmin(Request $request, ValidatorInterface $validator, $id)
+    public function contactAdmin(Request $request, ValidatorInterface $validator,int $id): Response
     {
-
-
         $author = $this->userRepository->find($id);
         $admins = $this->userRepository->findAdmin();
 
@@ -244,9 +304,8 @@ class ChatController extends AbstractController
                 404
             );
         }
+        
         //We want to create a chat and relate it to the user and all admins.
-
-
 
         $chatAdmin = $this->chatRepository->findOneBy(["title" => "ADMIN"]);
 
@@ -267,13 +326,43 @@ class ChatController extends AbstractController
         //deserialization : Json => Object
         $message = $this->serializer->deserialize($jsonData, Message::class, 'json');
 
+        //object cannot be null on contact-admin
+        if ($message->getObject() == null) {
+            return $this->json(
+                [
+                    'error' => 'L\'objet doit être renseigné'
+                ],
+                400
+            );
+        }
+        $errors = $validator->validate($message);
+
+        //errorArray to send to front useful messages of error (instead of ConstraintViolationListInterface)
+        if (count($errors) > 0) {
+            $errorArray = [];
+            foreach ($errors as $error) {
+                // name of field where there is an error
+                $field = $error->getPropertyPath();
+
+                // getting the message error
+                $errorArray[$field] = $error->getMessage();
+            }
+            return $this->json(
+                [
+                    'error' => $errorArray
+                ],
+                500
+            );
+        }
+        
+
         $message->setAuthor($author);
         $message->setChat($chatAdmin);
 
         $this->em->persist($message);
         $this->em->flush();
 
-
+        //emailing 
         $email = (new TemplatedEmail())
 
             ->to(new Address($author->getEmail()))
@@ -284,7 +373,7 @@ class ChatController extends AbstractController
 
             // pass variables (name => value) to the template
             ->context([
-
+                'message' => $message,
                 'user' => $author,
             ]);
         $this->mailer->send($email);

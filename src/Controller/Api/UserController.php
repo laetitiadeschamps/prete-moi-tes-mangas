@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Entity\UserVolume;
 use App\Form\UserType;
 use App\Repository\ChatRepository;
 use App\Repository\UserRepository;
@@ -34,8 +35,9 @@ class UserController extends AbstractController
     private $userVolumeRepository;
     private $chatRepository;
     private $mailer;
+    private $security;
 
-    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
+    public function __construct(MailerInterface $mailer, UserRepository $userRepository, SerializerInterface $serializer, Security $security, EntityManagerInterface $em, Localisator $localisator, ValidatorInterface $validator, UserVolumeRepository $userVolumeRepository, ChatRepository $chatRepository)
     {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -45,16 +47,23 @@ class UserController extends AbstractController
         $this->userVolumeRepository = $userVolumeRepository;
         $this->chatRepository = $chatRepository;
         $this->mailer = $mailer;
+        $this->security=$security;
     }
     /**
      * Method to see a user's profile (the logged in user or any other user)
+     * @param integer $id
+     * @param Security $security
+     * @return Response
      * @Route("/{id}", name="details", methods={"GET"})
      */
     public function details(int $id, Security $security): Response
     {
+        // we retrieve currently logged in user and the user whose profile we are trying to access
         /** @var User $user */
         $user = $security->getUser();
         $contact = $this->userRepository->find($id);
+        // Fix to send infos on the user excluding mangas and volumes, which will be rebuilt afterwards for better structuring
+        $contactForDisplay = $this->userRepository->findContactForProfile($id);
         // If the id is not on of an existing user, we throw an error
         if(!$contact) {
             return $this->json(
@@ -63,10 +72,20 @@ class UserController extends AbstractController
             );
         }
         // We build an array that contains on the one hand the user's infos and on the other hand the chat between the user and the logged in user. Returns null if no chat found
-        $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
-        $infos['contact'] = $contact;
-        $infos['chat'] = $chat;
-       
+        // If the profile we are tring to access is ours, the chat info will be null
+        if($user == $contact) {
+            $chat = null;
+        } else {
+            $chat = $this->chatRepository->getChatIdFromUsers($user->getId(), $contact->getId());
+        }
+        
+        $infos['contact'] = $contactForDisplay;
+        foreach($contact->getVolumes() as $volume) {
+            $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['info']=$volume->getVolume()->getManga();
+            $infos['contact']['manga'][$volume->getVolume()->getManga()->getTitle()]['volumes'][]=['status'=> $volume->getStatus(), 'number'=>$volume->getVolume()->getNumber()];
+        }
+        isset($infos['contact']['manga']) ? ksort($infos['contact']['manga']):''; 
+        $infos['chat'] = $chat;   
         return $this->json($infos, 200, [], [
             'groups' => 'users'
         ]);
@@ -74,10 +93,21 @@ class UserController extends AbstractController
 
     /**
      * Method to update the logged in user's profile info
+     * @param User $user
+     * @param Request $request
+     * @param UserPasswordHasherInterface $passwordEncoder
+     * @return Response
      * @Route("/{id}/update", name="update", methods={"PUT|PATCH"})
      */
     public function update(User $user, Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
+         /** @var User */
+         $tokenUser = $this->security->getUser();
+         if($user != $tokenUser) {
+             return $this->json(
+                 ['error' => 'Vous n\'avez pas les droits pour accéder à cette requête'], 403
+             );
+         }
         //We decode de JSON input to check if the password has been changed
         $jsonArray = json_decode($request->getContent(), true);
         $needsHash = false;
@@ -102,14 +132,12 @@ class UserController extends AbstractController
             $user->setLongitude($longitude);
         }
         if(isset($jsonArray['password'])) {
-              //We validate the inputs according to our constraints
-              
-                $errors = $this->validator->validate($user);
+              //We validate the inputs according to our constraints       
+                $errors = $this->validator->validate($user, null, ['add']);
         } else {
             //We validate the inputs according to our constraints
             $errors = $this->validator->validate($user, null, ['update']);
         }
-        
         //If there are any errors, we send back a list of errors (reformatted for clearer output) 
         if ($zipCodeError || count($errors) > 0) {
             $errorslist = array();
@@ -131,34 +159,32 @@ class UserController extends AbstractController
                 )
             );
         }
-        
-
-       
         $this->em->flush();
         return $this->json("Votre compte a bien été mis à jour", 200);
     }
 
     /**
      * Method to create a user
+     * @param Request $request
+     * @param UserPasswordHasherInterface $passwordEncoder
+     * @return Response
      * @Route("/add", name="add", methods={"POST"})
      */
     public function add(Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
-
         $JsonData = $request->getContent();
         $user = new User();
-
         $this->serializer->deserialize($JsonData, User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user, AbstractNormalizer::IGNORED_ATTRIBUTES => ['zip_code']]); 
+      
         // We set the zipcode independantly from the other properties because it needs cto be converted in an integer 
-       $jsonArray = json_decode($request->getContent(), true);
-       if(isset($jsonArray['zip_code'])) {
+        $jsonArray = json_decode($request->getContent(), true);
+        if(isset($jsonArray['zip_code'])) {
             $user->setZipCode(intval($jsonArray['zip_code']));
-       }
-       
+        }
         //hashing password and setting it for the newly created user
         // Retrieving coordinates according to user address and zip code and setting them for the newly created user
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress()??'error', $user->getZipCode()??'error');
-
+       
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()?$user->getAddress():'error', $user->getZipCode()?$user->getZipCode():'error');
         extract($coordinates);
         //if an error in Localisator is returned :
         $zipCodeError = null;
@@ -168,17 +194,14 @@ class UserController extends AbstractController
             $user->setLatitude($latitude);
             $user->setLongitude($longitude);
         }
- 
         $user->setRoles(['ROLE_USER']);
-
-        //We validate the inputs according to our constraints
-        $errors = $this->validator->validate($user);
-
+        //We validate the inputs according to our constraints for the add group
+        $errors = $this->validator->validate($user, null, ['add']);
         //If there are any errors, we send back a list of errors (reformatted for clearer output)
         if ($zipCodeError ||count($errors) > 0) {
             $errorslist = array();
             if($zipCodeError) {
-                $errorslist['zip_code']=$zipCodeError;
+                $errorslist['localisator']=$zipCodeError;
             }
             foreach ($errors as $error) {
                 $field = $error->getPropertyPath();
@@ -192,11 +215,8 @@ class UserController extends AbstractController
                 $user->getPassword()
             )
         );
-
-
         $this->em->persist($user);
         $this->em->flush();
-
         $email = (new TemplatedEmail())
                 ->to($user->getEmail())
                 ->subject('KASU Admin : création de compte')

@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Migrations\Query\Query;
+use Doctrine\ORM\Query as ORMQuery;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -37,15 +39,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-
-    public function search($latitude, $longitude)
+    /**
+     * Method to search users in a 30 kms radius
+     * @param float $latitude
+     * @param float $longitude
+     * @return Users[]
+     */
+    public function search(float $latitude, float $longitude)
     {
         // name of the current table
         $table = $this->getClassMetadata()->table["name"];
-       
+
         //sql query with haversine formula to get all users within 30km of the coordinates points
         $sql = "SELECT u.* "
-        .",(
+            . ",(
             6371 *
             acos(cos(radians(:lat)) * 
             cos(radians(u.latitude)) * 
@@ -54,12 +61,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             sin(radians(:lat)) * 
             sin(radians(u.latitude)))
             ) AS distance "
-        ."FROM " . $table . " AS u "
-        ."LEFT JOIN user_volume AS uservolume "
-        ."ON u.id = uservolume.user_id "
-        ."HAVING distance < 30 "
-        ."ORDER BY distance; "
-        ;
+            . "FROM " . $table . " AS u "
+            . "LEFT JOIN user_volume AS uservolume "
+            . "ON u.id = uservolume.user_id "
+            . "HAVING distance < 30 "
+            . "ORDER BY distance; ";
 
         // mapping of the user entity to get object datas
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
@@ -78,33 +84,59 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $stmt->getResult();
     }
 
+    /**
+     * Method to find users that are Admin
+     * @return User[]
+     */
     public function findAdmin() {
         $role = 'ROLE_ADMIN';
         return $this->createQueryBuilder('user')
-        
-        ->where('user.roles LIKE :role')
-        ->setParameter(':role', "%$role%")
-        
-        ->getQuery()
-        ->getResult();
+
+            ->where('user.roles LIKE :role')
+            ->setParameter(':role', "%$role%")
+
+            ->getQuery()
+            ->getResult();
     }
 
-    public function getCityCount()
+    /**
+     * Method to get the number of cities where there is at least one user
+     * @return array
+     */
+    public function getCityCount() : array
     {
         return $this->createQueryBuilder('user')
             ->select('count(DISTINCT user.city) as count')
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
-    public function getActiveCount()
+
+    /**
+     * Method to get the number of active users
+     * @return array
+     */
+    public function getActiveCount() : array
     {
         return $this->createQueryBuilder('user')
             ->select('count(user.id) as count')
             ->where('user.status = 1')
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
+    }
+
+    /**
+     * Method to get the number of active users
+     * @param integer $id
+     * @return User
+     */
+    public function findContactForProfile(int $id)
+    { 
+        return $this->createQueryBuilder('user')
+            ->select('user.id', 'user.lastname', 'user.firstname', 'user.email', 'user.pseudo', 'user.password', 'user.picture', 'user.description', 'user.holiday_mode', 'user.city', 'user.address', 'user.zip_code', 'user.status', 'user.latitude', 'user.longitude')
+            ->where('user.id = :id')
+            ->setParameter(':id', $id)
+            ->getQuery()
+            ->getSingleResult();
     }
 
 

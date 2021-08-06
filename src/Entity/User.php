@@ -15,8 +15,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity("email", message="Ce mail est déjà utilisé")
- * @UniqueEntity("pseudo", message="Ce pseudo est déjà utilisé")
+ * @UniqueEntity("email", message="Ce mail est déjà utilisé", groups={"add", "update"})
+ * @UniqueEntity("pseudo", message="Ce pseudo est déjà utilisé", groups={"add", "update"})
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -31,16 +31,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email(
-     *     message = "'{{ value }}' n'est pas un email valide.", groups={"update"}
+     *     message = "'{{ value }}' n'est pas un email valide.", groups={"add", "update"}
      * )
-     * @Assert\NotBlank(message="L'email ne peut pas être vide.")
+     * @Assert\NotBlank(message="L'email ne peut pas être vide.", groups={"add", "update"})
      * @Groups({"users"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
-     * @Assert\NotBlank(message="Un role doit être selectionné.", groups={"update"})
+     * @Assert\NotBlank(message="Un role doit être selectionné.",groups={"add", "update"})
      * @Groups({"users"})
      */
     private $roles = [];
@@ -48,24 +48,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string Thse hashed password
      * @ORM\Column(type="string")
-     * @Assert\NotBlank(message="Le mot de passe ne peut pas être vide.")
+     * @Assert\NotBlank(message="Le mot de passe ne peut pas être vide.", groups={"add"})
      * @Assert\Regex(
      *      pattern="/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%_*|=&-])[A-Za-z\d@$%_*|=&-]{6,}$/",
      *      message="Le mot de passe doit faire au moins 6 caractères, comporter une majuscule, une minuscule, un chiffre et un caractère spécial parmi les suivants : @$%_*|=-"
-     *  )
+     *  , groups={"add"})
      * @Groups({"users"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=100, unique=true)
-     * @Assert\NotBlank(message="Le pseudo doit être renseigné.", groups={"update"})
+     * @Assert\NotBlank(message="Le pseudo doit être renseigné.", groups={"add", "update"})
      * @Assert\Length(
      *      min = 4,
      *      max = 15,
      *      minMessage = "Votre pseudo doit faire au moins {{ limit }} caractères.",
      *      maxMessage = "Votre pseudo doit ne doit pas faire plus de {{ limit }} caractères."
-     * )
+     * , groups={"add", "update"})
      * 
      * @Groups({"chats", "one-chat", "users", "search"})
     */
@@ -73,72 +73,72 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Le nom doit être renseigné.", groups={"update"})
+     * @Assert\NotBlank(message="Le nom doit être renseigné.", groups={"add", "update"})
      * @Assert\Length(   
      *      max = 50,
      *      maxMessage = "Votre nom doit faire moins de  {{ limit }} caractères."
-     * )
+     * , groups={"add", "update"})
      * @Groups({"users"})
      */
     private $lastname;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Assert\NotBlank(message="Le prénom doit être renseigné.", groups={"update"})
+     * @Assert\NotBlank(message="Le prénom doit être renseigné.", groups={"add", "update"})
      * @Assert\Length(     
      *      max = 50,
      *      maxMessage = "Votre prénom doit faire moins de {{ limit }} caractères."
-     * )
+     * , groups={"add", "update"})
      * @Groups({"users"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"chats", "one-chat", "users"})
+     * @Groups({"chats", "one-chat", "users", "search"})
      */
     private $picture;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="L'adresse doit être renseignée.", groups={"update"})
+     * @Assert\NotBlank(message="L'adresse doit être renseignée.", groups={"add", "update"})
      * @Groups({"users"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned":true})
-     * @Assert\NotBlank(message="Le code postal doit être renseigné.", groups={"update"})
+     * @Assert\NotBlank(message="Le code postal doit être renseigné.", groups={"add", "update"})
      * @Assert\Regex(
      *      pattern="/^[0-9]{5}$/",
      *      message="Veuillez saisir un code postal valide."
-     * )
-     * @Groups({"users"})
+     * , groups={"add", "update"})
+     * @Groups({"users", "search"})
      */
     private $zip_code;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La ville doit être renseignée.")
+     * @Assert\NotBlank(message="La ville doit être renseignée.",groups={"add", "update"})
      * @Groups({"users", "search"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"users"})
+     * @Groups({"users", "search"})
      */
     private $holiday_mode;
 
     /**
      * @ORM\Column(type="boolean")
-     * @Assert\Regex("/^(0|1)$/")
+     * @Assert\Regex("/^(0|1)$/",groups={"add", "update"})
      * @Groups({"users"})
      */
     private $status;
@@ -180,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=UserVolume::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"users", "search"})
+     * @Groups({"users"})
      */
     private $volumes;
 
@@ -195,8 +195,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->messages = new ArrayCollection();
         $this->volumes = new ArrayCollection();
         $this->picture = $this->randomString();
+        $this->roles[] = 'ROLE_USER';
     }
-    
+    public function getPictureUrl() : string
+    {
+        return  $this->getPicture() ? 'https://api.multiavatar.com/'. $this->getPicture().'.svg' : 'https://api.multiavatar.com/kasu.svg';
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -239,7 +243,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        //$roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }

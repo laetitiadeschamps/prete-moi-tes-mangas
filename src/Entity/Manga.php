@@ -19,7 +19,7 @@ class Manga
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"mangas", "search"})
+     * @Groups({"mangas", "search", "users"})
      */
     private $id;
 

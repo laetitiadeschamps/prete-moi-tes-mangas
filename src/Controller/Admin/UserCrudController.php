@@ -33,6 +33,9 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
+use EasyCorp\Bundle\EasyAdminBundle\Config\UserMenu;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -84,18 +87,20 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle('new', 'Ajouter un utilisateur')
-            //->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
+            ->setPageTitle('edit',fn (User $user) => sprintf('Modifier l\'utilisateur <b>%s</b> :', $user->getPseudo()))
             ->setPageTitle('edit','Modifier')
             ->setPageTitle('index', 'Les utilisateurs')
-            ->setFormOptions( ['validation_groups' => []], ['validation_groups' => ['edit']] );// Do not validate password on updating a user
+            ->setFormOptions( ['validation_groups' => ['add']], ['validation_groups' => ['update']] );// Do not validate password on updating a user
     }
+   
     public function configureFields(string $pageName): iterable
     {
         return [
             IdField::new('id')->hideOnForm(),
-            TextField::new('pseudo')->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('firstname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('lastname')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('pseudo'),
+            TextField::new('firstname')->hideOnIndex(),
+            TextField::new('lastname')->hideOnIndex(),
+            ImageField::new('pictureUrl', 'Avatar')->hideOnForm(),
             ChoiceField::new('roles')
                 ->setLabel("Role")
                 ->setChoices([ 
@@ -105,18 +110,18 @@ class UserCrudController extends AbstractCrudController
                         ->allowMultipleChoices(true)
                         ->renderExpanded(true)
                         ->setFormType(ChoiceType::class)
-                        ->setFormTypeOptions(['validation_groups' => ['edit']])
+                        
                        ,           
-            BooleanField::new('status', 'Actif')->onlyOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
+            BooleanField::new('status', 'Actif')->onlyOnIndex(),
             ChoiceField::new('status', 'Actif')->onlyOnForms()->setChoices([
                 'Actif'=>true,
                 'Inactif'=>false
-            ])->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('email')->setFormTypeOptions(['validation_groups' => ['edit']]), 
+            ]),
+            TextField::new('email'), 
             TextField::new('password')->onlyWhenCreating()->setFormType(PasswordType::class),
-            TextField::new('address', 'Adresse')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            IntegerField::new('zip_code', 'Code postal')->hideOnIndex()->setFormTypeOptions(['validation_groups' => ['edit']]),
-            TextField::new('city', 'Ville')->setFormTypeOptions(['validation_groups' => ['edit']]),
+            TextField::new('address', 'Adresse')->hideOnIndex(),
+            IntegerField::new('zip_code', 'Code postal')->hideOnIndex(),
+            TextField::new('city', 'Ville'),
             AssociationField::new('volumes')->onlyWhenUpdating()->setFormTypeOption('disabled', 'disabled'),
             AssociationField::new('volumes')->hideOnForm()->renderAsNativeWidget()
         ];
@@ -127,21 +132,31 @@ class UserCrudController extends AbstractCrudController
         if (!($user instanceof User)) {
             return;
         }
-        $coordinates = $this->localisator->gpsByAdress($user->getAddress(), $user->getZipCode());
+        $coordinates = $this->localisator->gpsByAdress($user->getAddress()?$user->getAddress():'error', $user->getZipCode()?$user->getZipCode():'error');
         extract($coordinates);
-        
-        $user->setLatitude($latitude);
-        $user->setLongitude($longitude);
-        $pass = $user->getPassword();
-
-        $user->setPassword(
+      
+        if (isset($error)) {
+        //    $newForm->addError('error');
+                //     $url = $this->adminUrlGenerator
+                //     ->setController(UserCrudController::class)
+                //     ->setAction('index')
+                //     ->generateUrl();
+                //     return $this->redirect($url);
+                
+        } else {
+            $user->setLatitude($latitude);
+            $user->setLongitude($longitude);
+            $pass = $user->getPassword();
+            $user->setPassword(
             $this->passwordEncoder->hashPassword(
                 $user,
                 $pass
             )
         );
+      
         $entityManager->persist($user);
         $entityManager->flush();   
+    }
     } 
     // On updating a user, we use the updated address to fetch coordinates on the API before persisting
     public function updateEntity(EntityManagerInterface $entityManager, $user):void
@@ -162,11 +177,18 @@ class UserCrudController extends AbstractCrudController
         // }
         $user->setLatitude($latitude);
         $user->setLongitude($longitude);
-        dd($user);
+     
        
         $entityManager->persist($user);
-        $entityManager->flush();   
+        $entityManager->flush();  
+       
     } 
+    public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $entityManager->remove($entityInstance);
+        $entityManager->flush();
+        //$this->addFlash('success', 'L\'utilisateur ' . $entityInstance->getPseudo() . ' a bien été supprimé'); 
+    }
        
     public function sendEmail()
     {

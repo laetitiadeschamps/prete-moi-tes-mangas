@@ -57,9 +57,10 @@ body:not(.email)::before {
 }
 .navbar-custom-menu .user-avatar{
     font-size: 1.5em;
-    max-width: none;
+    max-width: 50px;
     max-height: none;
 }
+
 /* Fix btn-dark class not working */
 .bg-black {
     color: white;
@@ -90,4 +91,8 @@ header span.kasu {
   
         color:#d54028;
     
+}
+
+#flash-messages .alert {
+    text-align: center;
 }

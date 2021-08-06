@@ -37,14 +37,18 @@ class DashboardController extends AbstractDashboardController
         $this->userRepository = $userRepository;
         $this->messageRepository = $messageRepository;
     }
+
     /**
+     * Custom home page of back office
+     *
      * @Route("/", name="admin")
+     * @return Response
      */
     public function index(): Response
     {
         //return parent::index();
-       
-        $mangas = $this->mangaRepository->getCount()['count']; 
+     
+;        $mangas = $this->mangaRepository->getCount()['count']; 
         $cities = $this->userRepository->getCityCount()['count'];
         $volumes = $this->userVolumeRepository->getAvailableCount()['count'];
         $users = $this->userRepository->getActiveCount()['count'];
@@ -60,27 +64,55 @@ class DashboardController extends AbstractDashboardController
         ]);
     }
     
-
+    /**
+     * Dashboard customization
+     *
+     * @return Dashboard
+     */
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
             ->setTitle('Kasu')
             ->setFaviconPath('images/logo.png');
     }
+
+    /**
+     * assets customization
+     *
+     * @return Assets
+     */
     public function configureAssets(): Assets
     {
         return Assets::new()->addCssFile('css/admin.css');
     }
 
+    /**
+     * Dashboard menu  customization
+     *
+     * @return iterable
+     */
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkToCrud('Mangas', 'fas fa-book', Manga::class);
-        yield MenuItem::linkToCrud('Messagerie', 'far fa-envelope', Message::class);
         yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-user-friends', User::class);
+        yield MenuItem::section('Messagerie');
+        yield MenuItem::linkToCrud('Boîte de réception', 'far fa-envelope', Message::class)
+        ->setController(MessageCrudController::class);
+        yield MenuItem::linkToCrud('Réponses envoyées', 'fas fa-paper-plane', Message::class)
+        ->setController(SentMessageCrudController::class);
+        yield MenuItem::linkToCrud('Demandes archivées', 'fas fa-trash', Message::class)
+        ->setController(ArchiveMessageCrudController::class);
+        ;
        
     }
 
+    /**
+     * userMenu customization
+     *
+     * @param UserInterface $user
+     * @return UserMenu
+     */
     public function configureUserMenu(UserInterface $user): UserMenu
     {
         // Usually it's better to call the parent method because that gives you a
@@ -92,7 +124,7 @@ class DashboardController extends AbstractDashboardController
             ->setName($user->getPseudo())
             // use this method if you don't want to display the name of the user
 
-            ->setAvatarUrl($user->getPicture())
+            ->setAvatarUrl('https://api.multiavatar.com/' . $user->getPicture() . '.png')
 
             ->setMenuItems( [MenuItem::linkToLogout('__ea__user.sign_out', '')->setCssClass('logout')]);
             
